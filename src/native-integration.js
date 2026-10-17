@@ -131,8 +131,8 @@
     themeStyle.textContent=state.settings.theme==='forest'?'':`html{--background-base:${t.background};--background-elevated-base:${t.panel};--background-highlight:${t.panel};--text-base:${t.text};--text-subdued:${t.muted};--essential-bright-accent:${t.accent};--text-bright-accent:${t.accent}}html main,html .main-view-container__scroll-node-child{background-color:${t.background}!important;color:${t.text}}html [data-testid="global-nav-bar"],html [data-testid="now-playing-bar"]{background-color:${t.panel}!important}html main [data-encore-id="text"],html .le-settings,html .le-popover{color:${t.text}}html .le-primary{background:${t.accent};color:#101010}html .le-popover,html .le-input{background-color:${t.panel};color:${t.text}}html .le-subtle,html .le-status,html .le-card p,html .le-popover p{color:${t.muted}}`;
     parsedCache.clear();
     const font=t.fontFamily&&t.fontFamily!=='System'?JSON.stringify(t.fontFamily):'inherit';
-    themeStyle.textContent+=`html body,html main,html .le-popover,html .le-settings,html .le-editor{font-family:${font}!important}`;
-    if(t.backgroundImage)themeStyle.textContent+=`html main{background-image:linear-gradient(#0007,#0007),url("${t.backgroundImage}")!important;background-size:cover!important;background-attachment:fixed!important}`;
+    if(t.fontFamily&&t.fontFamily!=='System')themeStyle.textContent+=`html{--encore-body-font-stack:${font};--encore-title-font-stack:${font}}html body,html main,html [data-encore-id="text"],html .le-popover,html .le-settings,html .le-editor{font-family:${font}!important}`;
+    if(t.backgroundImage)themeStyle.textContent+=`html main,html .main-view-container__scroll-node-child{background-image:linear-gradient(#0007,#0007),url("${t.backgroundImage}")!important;background-size:cover!important;background-attachment:fixed!important}`;
   }
   const fileInput = el('input'); fileInput.id='spotify-native-enhancer-lrc-file'; fileInput.type = 'file'; fileInput.accept = '.lrc'; fileInput.hidden = true;
   fileInput.onchange = async () => {
