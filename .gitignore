@@ -1,0 +1,10 @@
+dist/
+installer/payload/
+node_modules/
+.test-lab/
+*.log
+*.spa
+*.exe
+*.dll
+*.zip
+.DS_Store

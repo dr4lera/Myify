@@ -1,0 +1,19 @@
+This installer adds local lyric import, playback tools and custom color themes
+inside your existing Windows Spotify app. Spotify sign-in and account features
+continue to work normally. It does not bundle Spotify or any music files.
+
+Spotify will close while the UI patch is applied. An original resource backup
+and an installation receipt are saved under your local application data.
+
+The optional version protection blocks the known update staging paths and adds
+update-suppression flags to managed shortcuts/startup. You can reverse this in
+Enhancer settings and updates, or by uninstalling. Manual reinstalls or a future
+Spotify updater may bypass this protection. Future app versions require a tested
+compatible patch; this installer will not patch an unknown build.
+
+Custom themes, lyrics and bookmarks stay in Spotify's local browser storage.
+Export backups from Local enhancements in Spotify Settings before clearing data.
+
+After installation: play any supported item, click the sliders beside Spotify's
+lyrics control, and use Import .lrc or Playback tools. Set A, move forward, and
+Set B starts the loop immediately, including when playback was paused.
