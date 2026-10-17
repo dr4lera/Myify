@@ -1,0 +1,16 @@
+Myify LRC Maker includes Python/Tcl/Tk, Faster Whisper, CTranslate2, PyAV and its FFmpeg libraries, NumPy, Tokenizers, Hugging Face Hub, ONNX Runtime and their dependencies. Their original license materials are included in third-party-licenses and the packaged runtime. Application source is MIT licensed; dependency and model licenses are separate.
+
+Upstream source and build information:
+https://github.com/SYSTRAN/faster-whisper
+https://github.com/OpenNMT/CTranslate2
+https://github.com/PyAV-Org/PyAV
+https://github.com/PyAV-Org/pyav-ffmpeg
+https://ffmpeg.org/download.html
+https://github.com/numpy/numpy
+https://github.com/huggingface/tokenizers
+https://github.com/huggingface/huggingface_hub
+https://github.com/microsoft/onnxruntime
+https://www.python.org/downloads/source/
+https://github.com/openai/whisper
+
+Models are downloaded separately from Hugging Face by user choice. Whisper weights and converted models retain their upstream licenses. Generated output depends on user-supplied audio and is not provided under this application's source license.

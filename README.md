@@ -34,3 +34,7 @@ Playback tools use Spotify's own transport. They work with local files, music, a
 ## License
 
 Myify's source is [MIT licensed](LICENSE). Spotify and its assets remain the property of their respective owners and are not included or covered by this license. This is an independent project and is not affiliated with Spotify.
+
+## Local LRC generator
+
+[Myify LRC Maker](lrc-maker/README.md) is a separate Windows companion that generates timed LRC files from local audio. Version 1.0.1 includes both English base.en and small.en models for immediate offline use. Download its setup EXE from the **LRC Maker** release, separate from the Spotify customization installer. Automatic recognition needs review, especially on rap and layered vocals.
