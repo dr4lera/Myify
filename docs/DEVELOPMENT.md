@@ -53,6 +53,8 @@ Before the Myify rename, the same transport implementation was tested inside act
 
 Run `tests/launcher.test.ps1` on Windows to exercise the real compiled launcher against isolated fake manager/desktop fixtures, including paths with spaces/Unicode, repeated launch, missing files and nonzero manager exits. `Myify.exe --check` runs the installed manager's read-only compatibility check without starting its desktop tools or Spotify. Do not describe fixture checks as a live Spotify or taskbar-pinning test.
 
+After building the desktop payload, run `python tests/packaged_startup.py dist/desktop-build/MyifyDesktop/MyifyDesktop.exe`. It starts the packaged application with a missing default data directory, verifies configuration bootstrap and authenticated communication, checks visible/hidden repeated launches use the same server, and requests a clean quit. It uses an isolated temporary profile and does not touch the real user's settings. Windows CI runs this before packaging the installer.
+
 The manager supports `-Action Check -SpotifyRoot "C:\path\to\Spotify"` for a read-only compatibility check. Setup accepts `/SPOTIFYDIR="..."` and uses the same engine validation as the manager.
 
 The Inno compiler embeds build metadata, so binary-identical rebuilds are not promised. Source is MIT licensed; Spotify's binaries/assets are not distributable as part of this project.

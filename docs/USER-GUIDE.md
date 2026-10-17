@@ -2,13 +2,15 @@
 
 ## Launching and pinning Myify
 
-Install or upgrade with the single **Myify-Setup-0.4.3.exe** download. Then open **Start → Myify → Spotify (Myify)**. Its target is the installed `Myify.exe`, which runs the compatibility/repair manager, starts Spotify, and opens Myify desktop tools visibly. A repeated launch shows the existing tools instead of creating a second tools server.
+Install or upgrade with the single **Myify-Setup-0.4.3.exe** download. Setup creates a **Spotify (Myify)** desktop shortcut by default; leave that option checked. Double-click it, or open **Start → Myify → Spotify (Myify)**. Its target is the installed `Myify.exe`, which runs the compatibility/repair manager, starts Spotify, and opens Myify desktop tools visibly. A repeated launch shows the existing tools instead of creating a second tools server.
 
 To pin the launcher, right-click **Spotify (Myify)** in Start → **More → Pin to taskbar**. Alternatively, open `%LOCALAPPDATA%\SpotifyNativeEnhancer` in File Explorer and pin **Myify.exe**. Unpin any previous broken Myify entry first. Pinning the icon of a normally opened Spotify app starts Spotify directly; it does not start the Myify desktop tools.
 
 The installer updates recognized old Myify launcher shortcuts. Windows can retain a cached taskbar target, so replace an old pin if it still opens PowerShell or does nothing. Do not move `Myify.exe` out of its installed folder; it locates `Manager.ps1` and desktop tools beside itself. No second installer or companion ZIP is required.
 
 If startup fails, the launcher shows an error with the diagnostic location: `%LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log`. The existing manager log remains `manager.log` in that folder. Launching `Myify.exe --check` validates the installed compatibility path without opening Spotify or desktop tools.
+
+For the desktop tools alone, open or pin **Start → Myify → Myify desktop tools**. First startup creates its own data directory and private `bridge.json` when missing. You do not need to create these manually. An existing installation's connection token is preserved; malformed settings produce a repair message rather than an unhandled Python traceback. A tools-only launch can generate/edit local lyrics while Spotify is disconnected; use **Spotify (Myify)** to start both and connect playback tools.
 
 ## Local lyrics
 

@@ -4,9 +4,48 @@ import secrets
 import threading
 import time
 import os
+import re
+import socket
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ORIGINS = {'https://xpui.app.spotify.com', 'https://xpui.spotify.com'}
+
+
+def load_config(data_root):
+    """Bootstrap a direct tools launch without overwriting an install's secret."""
+    folder = Path(data_root)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / 'bridge.json'
+    for attempt in range(50):
+        try:
+            config = json.loads(path.read_text(encoding='utf-8-sig'))
+        except FileNotFoundError:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+                listener.bind(('127.0.0.1', 0))
+                port = listener.getsockname()[1]
+            config = {'token': secrets.token_hex(32), 'port': port}
+            try:
+                descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            except FileExistsError:
+                continue
+            with os.fdopen(descriptor, 'w', encoding='utf-8') as output:
+                json.dump(config, output)
+                output.flush()
+                os.fsync(output.fileno())
+            return config
+        except json.JSONDecodeError:
+            # Another launcher can see the exclusively created file while its
+            # first writer is finishing. Never replace an existing valid secret.
+            if attempt < 49:
+                time.sleep(0.05)
+                continue
+            raise ValueError(f'Myify connection settings are incomplete: {path}. Run setup again to repair them.') from None
+        if not isinstance(config, dict) or not isinstance(config.get('token'), str) or not re.fullmatch(r'[a-fA-F0-9]{64}', config['token']) \
+                or type(config.get('port')) is not int or not 1024 <= config['port'] <= 65535:
+            raise ValueError(f'Myify connection settings are invalid: {path}. Run setup again to repair them.')
+        return config
+    raise ValueError(f'Myify could not initialize its connection settings: {path}. Try starting it again.')
 
 
 class Bridge:

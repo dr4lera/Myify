@@ -2,12 +2,16 @@
 
 ## 0.4.3 - Reliable launcher and taskbar instructions
 
-- Install a native Myify.exe launcher and target it from Start, optional Desktop, and post-install launch controls.
+- Fix direct MyifyDesktop startup when the data folder or bridge.json does not exist. Initialize private connection settings safely, preserve existing credentials, and show readable configuration errors.
+
+- Install a native Myify.exe launcher and target it from Start, the default desktop shortcut, and post-install launch controls.
 - Show desktop tools on explicit launch and reuse their existing single instance. Keep Spotify's compatibility checks, repair and version-protection policy in the existing manager.
 - Capture manager startup failures in launcher.log and show an error instead of silently disappearing.
 - Migrate recognized old Myify launcher shortcuts and explain replacing a cached PowerShell taskbar pin.
 - Package the launcher, tools and both English models in one installer asset; update setup, launch, pinning and troubleshooting instructions.
 - Add native launcher fixture tests for Unicode/spaced paths, repeated launch and error handling.
+- Fully exit forwarding desktop instances and release leftover noninteractive processes after authenticated shutdown so upgrades can replace the tools executable.
+- Use a per-profile process lock on Windows, forward repeated startup to the existing window, and retry while its server is starting.
 
 ## 0.4.2 - Backgrounds and fonts
 

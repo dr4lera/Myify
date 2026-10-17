@@ -2,6 +2,8 @@ Myify desktop tools are GPL-2.0-or-later. Renderer integration and installer scr
 
 Includes Mutagen 1.47.0 (GPL-2.0-or-later, source https://github.com/quodlibet/mutagen/tree/release-1.47.0), Python/Tcl/Tk, Faster Whisper, CTranslate2, PyAV and FFmpeg, NumPy, Tokenizers, Hugging Face Hub, ONNX Runtime and dependencies. Original license texts are in third-party-licenses and _internal package metadata. Pinned dependencies are in desktop/requirements.txt and lrc-maker/requirements.txt.
 
+The per-profile process lock uses filelock 4.2.0 (MIT, https://github.com/tox-dev/py-filelock). Its license is included in the bundled filelock package metadata.
+
 English base.en and small.en Whisper models are bundled. Model source, exact revisions and checksums: lrc-maker/model-manifest.json. Whisper weights are MIT licensed; see third-party-licenses/whisper-MODEL-LICENSE.txt.
 
 Upstream source:

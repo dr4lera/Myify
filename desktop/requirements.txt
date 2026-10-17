@@ -1,2 +1,3 @@
 -r ../lrc-maker/requirements.txt
 mutagen==1.47.0
+filelock==4.2.0

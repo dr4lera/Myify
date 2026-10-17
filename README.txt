@@ -2,7 +2,8 @@ MYIFY 0.4.3 - COMBINED WINDOWS TOOLS
 
 Run Myify-Setup-0.4.3.exe over your existing Myify installation. Spotify closes
 while setup updates the tools. The install identity, original Spotify resource
-backup and saved lyrics/themes/bookmarks are preserved. Launch Spotify (Myify).
+backup and saved lyrics/themes/bookmarks are preserved. Setup creates a Spotify
+(Myify) desktop shortcut by default. Double-click it to open Spotify and tools.
 Standalone desktop Spotify 1.3.5.3058 is required; unknown builds are refused.
 
 ONE DOWNLOAD: Myify-Setup-0.4.3.exe includes everything. No separate launcher
@@ -13,6 +14,9 @@ launcher, use Start > Myify > Spotify (Myify) > More > Pin to taskbar, or pin
 %LOCALAPPDATA%\SpotifyNativeEnhancer\Myify.exe from File Explorer. Replace old
 Myify pins; pinning the running Spotify icon skips the desktop-tools launcher.
 Startup errors appear in a dialog and SpotifyNativeEnhancerData\launcher.log.
+For tools alone, Start > Myify > Myify desktop tools can also be pinned.
+Direct tools startup now creates a missing data/configuration folder itself;
+you do not need to create bridge.json or browse hidden AppData folders.
 
 The sliders button beside lyrics opens Myify playback tools:
 - Generate lyrics transcribes the current LOCAL song with the included English

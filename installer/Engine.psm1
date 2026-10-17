@@ -234,7 +234,30 @@ function Get-BridgeConfiguration {
 function Stop-DesktopTools {
   $config=Read-Json (Join-Path $script:DataRoot 'bridge.json')
   if(-not $config){return}
+  $before=@(Get-Process -Name MyifyDesktop -ErrorAction SilentlyContinue | ForEach-Object {
+    try{[PSCustomObject]@{Id=$_.Id;Path=$_.Path}}catch{}
+  })
   try{$reply=Invoke-RestMethod -Uri ('http://127.0.0.1:'+$config.port+'/open') -Method Post -Headers @{Origin='https://xpui.app.spotify.com';Authorization=('Bearer '+$config.token)} -ContentType 'application/json' -Body '{"action":"quit"}' -TimeoutSec 2}catch{return}
-  if($reply.pid){for($i=0;$i-lt 50;$i++){if(-not(Get-Process -Id ([int]$reply.pid) -ErrorAction SilentlyContinue)){return};Start-Sleep -Milliseconds 200};throw 'Myify desktop tools are still closing. Wait for the current task to stop and run setup again.'}else{Start-Sleep -Milliseconds 800}
+  if(-not $reply.pid){Start-Sleep -Milliseconds 800;return}
+  $owner=$before | Where-Object{$_.Id-eq [int]$reply.pid} | Select-Object -First 1
+  if(-not $owner.Path){
+    for($i=0;$i-lt 50;$i++){if(-not(Get-Process -Id ([int]$reply.pid) -ErrorAction SilentlyContinue)){return};Start-Sleep -Milliseconds 200}
+    throw 'Myify desktop tools are still closing. Wait for the current task to stop and run setup again.'
+  }
+  # The authenticated server identifies the installed executable. Wait for all
+  # processes from that exact file, including previous forwarding instances.
+  $ids=@($before | Where-Object{$_.Path-eq $owner.Path} | ForEach-Object{$_.Id})
+  for($i=0;$i-lt 50;$i++){
+    $remaining=@(Get-Process -Id $ids -ErrorAction SilentlyContinue | Where-Object{$_.Path-eq $owner.Path})
+    if(-not $remaining.Count){return}
+    Start-Sleep -Milliseconds 200
+  }
+  $remaining=@(Get-Process -Id $ids -ErrorAction SilentlyContinue | Where-Object{$_.Path-eq $owner.Path})
+  if(-not $remaining.Count){return}
+  if(@($remaining | Where-Object{$_.MainWindowHandle-ne [IntPtr]::Zero}).Count){throw 'Myify still has an open tools window. Close it before running setup again.'}
+  # Quit already completed and no tools window remains. Old forwarding/runtime
+  # processes have no interactive job and must release the executable for setup.
+  $remaining | Stop-Process -ErrorAction Stop
+  foreach($process in $remaining){$process.WaitForExit(5000)|Out-Null}
 }
 Export-ModuleMember -Function Assert-Supported,Initialize-Enhancer,Install-Enhancer,Get-EnhancerStatus,Enable-UpdateProtection,Disable-UpdateProtection,Start-ProtectedSpotify,Remove-Enhancer,Stop-Spotify,Test-SpotifyContent,Get-BridgeConfiguration

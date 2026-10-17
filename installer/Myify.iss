@@ -28,7 +28,7 @@ InfoBeforeFile=Installer-info.txt
 
 [Tasks]
 Name: pinupdates; Description: "Keep this tested Spotify version (reversible in the manager)"; Flags: checkedonce
-Name: desktopicon; Description: "Create a protected Spotify shortcut on the desktop"; Flags: unchecked
+Name: desktopicon; Description: "Create a Spotify (Myify) desktop shortcut (opens Spotify and Myify tools)"; Flags: checkedonce
 
 [Files]
 Source: "payload\Myify.exe"; DestDir: "{app}"; Flags: ignoreversion

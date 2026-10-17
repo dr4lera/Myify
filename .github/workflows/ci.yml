@@ -39,6 +39,7 @@ jobs:
           .\tests\launcher.test.ps1
           python lrc-maker/download_models.py
           .\Build-Desktop.ps1
+          python tests/packaged_startup.py dist/desktop-build/MyifyDesktop/MyifyDesktop.exe
           $compiler=Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
           if(-not(Test-Path -LiteralPath $compiler)){
             choco install innosetup --yes --no-progress

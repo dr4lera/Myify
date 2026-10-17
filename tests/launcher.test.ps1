@@ -24,7 +24,8 @@ $stub=Join-Path $lab 'stub.c'
 int WINAPI wWinMain(HINSTANCE a,HINSTANCE b,PWSTR c,int d){
   wchar_t p[32768];GetModuleFileNameW(NULL,p,32768);wcscpy(wcsrchr(p,92)+1,L"opened.txt");
   HANDLE f=CreateFileW(p,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,0,NULL);
-  if(f==INVALID_HANDLE_VALUE)return 1;DWORD n;WriteFile(f,"opened",6,&n,NULL);CloseHandle(f);return 0;
+  if(f==INVALID_HANDLE_VALUE)return 1;DWORD n;WriteFile(f,"opened",6,&n,NULL);CloseHandle(f);
+  if(wcscmp(c,L"--linger")==0)Sleep(120000);return 0;
 }
 '@ | Set-Content -LiteralPath $stub -Encoding UTF8
 & $GccCompiler -municode -mwindows -static $stub -o (Join-Path $lab 'fixture-desktop.exe')
@@ -53,5 +54,24 @@ try{
   $missing=Join-Path $lab 'Incomplete install';$null=New-Item -ItemType Directory -Path $missing
   Copy-Item -LiteralPath $exe -Destination $missing
   if((Run-Launcher (Join-Path $missing 'Myify.exe') '--check')-ne 2){throw 'Missing install files were silently accepted'}
+  $staleOne=Start-Process -FilePath (Join-Path $root 'desktop\MyifyDesktop.exe') -ArgumentList '--linger' -WindowStyle Hidden -PassThru
+  $staleTwo=Start-Process -FilePath (Join-Path $root 'desktop\MyifyDesktop.exe') -ArgumentList '--linger' -WindowStyle Hidden -PassThru
+  $fixtureData=Join-Path $lab 'fixture-data';$null=New-Item -ItemType Directory -Path $fixtureData
+  @{port=12345;token=('a'*64)} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $fixtureData 'bridge.json') -Encoding UTF8
+  $engine=Import-Module (Join-Path $project 'installer\Engine.psm1') -Force -PassThru
+  try{
+    & $engine {
+      param($dataPath,$ownerId)
+      Initialize-Enhancer -DataRoot $dataPath
+      $script:fixtureOwnerId=$ownerId
+      function script:Invoke-RestMethod {param($Uri,$Method,$Headers,$ContentType,$Body,$TimeoutSec);return @{pid=$script:fixtureOwnerId}}
+      Stop-DesktopTools
+    } $fixtureData $staleOne.Id
+    if((Get-Process -Id $staleOne.Id,$staleTwo.Id -ErrorAction SilentlyContinue)){throw 'Shutdown left old forwarding processes holding the executable'}
+  }finally{
+    Remove-Module $engine
+    Stop-Process -Id $staleOne.Id,$staleTwo.Id -ErrorAction SilentlyContinue
+  }
   Write-Output 'PASS: native launcher check/launch/relaunch, Unicode and spaces, read-only check, manager error logging, missing-file rejection.'
+  Write-Output 'PASS: authenticated shutdown releases stale helper processes from the same executable path.'
 }finally{$env:LOCALAPPDATA=$originalLocal}

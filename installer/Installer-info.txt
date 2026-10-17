@@ -8,11 +8,16 @@ Generate lyrics for a local song. Audio is processed on your own computer.
 This upgrades existing Myify installations while keeping saved user settings.
 
 This is the only installer you need. The installed Myify.exe launcher opens
-Spotify and shows Myify desktop tools. Use Start > Myify > Spotify (Myify).
+Spotify and shows Myify desktop tools. Setup creates a Spotify (Myify) desktop
+shortcut by default; leave that option checked. Double-click it to launch.
+You can also use Start > Myify > Spotify (Myify).
 For a taskbar shortcut, pin that Start menu entry (More > Pin to taskbar), or
 pin Myify.exe in %LOCALAPPDATA%\SpotifyNativeEnhancer. Replace any older Myify
 pin that points to PowerShell. Startup errors show a message and are recorded
 in %LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log.
+You can also pin Start > Myify > Myify desktop tools for the tools alone.
+Direct tools startup creates any missing data folder / connection settings;
+there is no need to create bridge.json or find a hidden folder manually.
 
 Spotify will close while the UI patch is applied. An original resource backup
 and an installation receipt are saved under your local application data.

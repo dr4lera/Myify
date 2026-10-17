@@ -15,6 +15,8 @@ Version 0.4.3 installs a regular **Myify.exe** launcher. **Start → Myify → S
 
 Download only **Myify-Setup-0.4.3.exe** from the release's Assets. It contains the launcher, desktop tools and both English models. There is no separate launcher installer or required source ZIP. Existing lyrics, themes and backups are preserved during upgrade. If startup fails, Myify displays an error and captures details in `%LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log`.
 
+To open only the desktop tools, use **Start → Myify → Myify desktop tools**. That entry can also be pinned. Direct tools startup creates a missing data folder and connection configuration automatically; you do not need to locate or create those folders by hand. Spotify playback controls connect after launching Spotify with the combined Myify launcher.
+
 The installer is unsigned. It contains Myify scripts and compatibility hashes, not Spotify, songs, credentials, or decompiled source. Spotify sign-in and normal account requirements still apply. Myify does not unlock Premium or bypass content access.
 
 ## Features

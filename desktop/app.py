@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 import math
+from filelock import FileLock
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -15,7 +16,7 @@ from tkinter.scrolledtext import ScrolledText
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'lrc-maker'))
 from lrc_engine import MODELS, load_model, transcribe, save_unique, Cancelled
-from bridge import Bridge, serve
+from bridge import Bridge, serve, load_config
 import library
 
 VERSION = '0.4.3'
@@ -392,7 +393,7 @@ class App:
         self.root.withdraw()
 
     def quit(self):
-        self.stop.set(); self.server.shutdown(); self.closed = True; self.root.destroy()
+        self.stop.set(); self.server.shutdown(); self.server.server_close(); self.closed = True; self.root.destroy()
 
     @staticmethod
     def clock(value):
@@ -454,21 +455,41 @@ def main():
         if args.report: Path(args.report).write_text(json.dumps(result), encoding='utf-8')
         if not all(result[k] for k in ('base.en','small.en','imports')): raise SystemExit(1)
         return
-    config_file = Path(args.data_root) / 'bridge.json'
-    config = json.loads(config_file.read_text(encoding='utf-8-sig'))
-    root = tk.Tk()
     try:
-        app = App(root, args.data_root, config, args.hidden)
-    except OSError:
-        # A single instance owns the port. Show it through the existing bridge.
-        if args.hidden:
-            root.destroy(); return
-        import urllib.request
-        request = urllib.request.Request(f"http://127.0.0.1:{config['port']}/open", json.dumps({'action': 'show'}).encode(), headers={'Origin': 'https://xpui.app.spotify.com', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config['token']})
-        try: urllib.request.urlopen(request, timeout=2).close()
-        except Exception: messagebox.showerror('Myify', 'The desktop tools port is in use. Close the old Myify tools and relaunch.')
-        root.destroy(); return
-    root.mainloop()
+        config = load_config(args.data_root)
+    except (OSError, ValueError) as error:
+        error_root = tk.Tk(); error_root.withdraw()
+        messagebox.showerror('Myify startup', str(error), parent=error_root)
+        error_root.destroy()
+        raise SystemExit(1) from None
+    root = tk.Tk()
+    instance_lock = FileLock(Path(args.data_root) / 'desktop.lock')
+    try:
+        try:
+            # Windows HTTP socket reuse does not enforce a single instance.
+            instance_lock.acquire(timeout=0)
+            app = App(root, args.data_root, config, args.hidden)
+        except OSError:
+            if args.hidden:
+                root.destroy()
+                os._exit(0)
+            import urllib.request
+            request = urllib.request.Request(f"http://127.0.0.1:{config['port']}/open", json.dumps({'action': 'show'}).encode(), headers={'Origin': 'https://xpui.app.spotify.com', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config['token']})
+            deadline = time.monotonic() + 5
+            while True:
+                try:
+                    urllib.request.urlopen(request, timeout=1).close()
+                    break
+                except OSError:
+                    if time.monotonic() >= deadline:
+                        messagebox.showerror('Myify', 'The desktop tools are not responding. Close the old Myify tools and relaunch.')
+                        break
+                    time.sleep(0.1)
+            root.destroy()
+            os._exit(0)
+        root.mainloop()
+    finally:
+        instance_lock.release()
 
 
 if __name__ == '__main__':
