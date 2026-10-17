@@ -142,7 +142,7 @@ class LibraryTest(unittest.TestCase):
             item = dict(title='Song', artist='Artist', duration=120000)
             def inspect(path): return dict(path=str(path),title='Song',artist='Artist',duration=120)
             with patch.object(library, 'inspect', inspect):
-                self.assertEqual(library.discover(item, [folder]), str(a))
+                self.assertEqual(library.discover(item, [folder]), str(a.resolve()))
                 self.assertIsNone(library.discover({**item,'duration':240000}, [folder]))
                 b.write_bytes(b'other take')
                 self.assertIsNone(library.discover(item, [folder]))
@@ -153,8 +153,8 @@ class LibraryTest(unittest.TestCase):
             rows = [dict(path=str(p), title='Song', artist='Artist', duration=120) for p in (a,b)]
             item = dict(uri='spotify:local:a:b:c:120', title='Song', artist='Artist', duration=120000)
             self.assertIsNone(library.match(rows, item))
-            rows[0]['uri'] = item['uri']; self.assertEqual(library.match(rows, item), str(a))
-            a.unlink(); self.assertEqual(library.match(rows, item), str(b))
+            rows[0]['uri'] = item['uri']; self.assertEqual(library.match(rows, item), str(a.resolve()))
+            a.unlink(); self.assertEqual(library.match(rows, item), str(b.resolve()))
 
     def test_duplicate_scan_does_not_delete_and_ignores_missing_files(self):
         with tempfile.TemporaryDirectory() as folder:

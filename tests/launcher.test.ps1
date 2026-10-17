@@ -41,11 +41,11 @@ try{
   $env:LOCALAPPDATA=Join-Path $lab 'profile'
   $exe=Join-Path $root 'Myify.exe'
   if((Run-Launcher $exe '--check')-ne 0){throw 'Check failed in a path with spaces / Unicode'}
-  if([IO.File]::ReadAllText((Join-Path $root 'action.txt'))-ne 'Check'){throw 'Check did not reach the installed manager'}
+  $actualAction=[IO.File]::ReadAllText((Join-Path $root 'action.txt'))
+  if($actualAction-ne 'Check'){throw "Check did not reach the installed manager (received '$actualAction')"}
   if(Test-Path -LiteralPath (Join-Path $root 'desktop\opened.txt')){throw 'Check opened desktop tools'}
   if((Run-Launcher $exe)-ne 0){throw 'Launch failed'}
-  for($i=0;$i-lt 30 -and -not(Test-Path -LiteralPath (Join-Path $root 'desktop\opened.txt'));$i++){Start-Sleep -Milliseconds 100}
-  if(-not(Test-Path -LiteralPath (Join-Path $root 'desktop\opened.txt'))){throw 'Desktop tools were not launched'}
+  if(Test-Path -LiteralPath (Join-Path $root 'desktop\opened.txt')){throw 'Launcher opened an unwanted second desktop window'}
   if([IO.File]::ReadAllText((Join-Path $root 'action.txt'))-ne 'Launch'){throw 'Launch did not use the managed startup path'}
   if((Run-Launcher $exe)-ne 0){throw 'Repeated launch failed'}
   "param([string]`$Action,[switch]`$Quiet); Write-Error 'fixture startup failure'; exit 23" | Set-Content -LiteralPath $manager -Encoding UTF8

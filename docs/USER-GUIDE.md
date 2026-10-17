@@ -2,7 +2,7 @@
 
 ## Launching and pinning Myify
 
-Install or upgrade with the single **Myify-Setup-0.4.3.exe** download. Setup creates a **Spotify (Myify)** desktop shortcut by default; leave that option checked. Double-click it, or open **Start → Myify → Spotify (Myify)**. Its target is the installed `Myify.exe`, which runs the compatibility/repair manager, starts Spotify, and opens Myify desktop tools visibly. A repeated launch shows the existing tools instead of creating a second tools server.
+Install or upgrade with the single **Myify-Setup-0.4.3.exe** download. Setup creates a **Spotify (Myify)** desktop shortcut by default; leave that option checked. Double-click it, or open **Start → Myify → Spotify (Myify)**. Its target is the installed `Myify.exe`, which runs the compatibility/repair manager and starts Spotify with the desktop helper hidden. No second tools window opens. Repeated launches reuse the helper. Open advanced tools when needed from Spotify or **Start → Myify → Myify desktop tools**.
 
 To pin the launcher, right-click **Spotify (Myify)** in Start → **More → Pin to taskbar**. Alternatively, open `%LOCALAPPDATA%\SpotifyNativeEnhancer` in File Explorer and pin **Myify.exe**. Unpin any previous broken Myify entry first. Pinning the icon of a normally opened Spotify app starts Spotify directly; it does not start the Myify desktop tools.
 

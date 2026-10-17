@@ -28,7 +28,7 @@ InfoBeforeFile=Installer-info.txt
 
 [Tasks]
 Name: pinupdates; Description: "Keep this tested Spotify version (reversible in the manager)"; Flags: checkedonce
-Name: desktopicon; Description: "Create a Spotify (Myify) desktop shortcut (opens Spotify and Myify tools)"; Flags: checkedonce
+Name: desktopicon; Description: "Create a Spotify (Myify) desktop shortcut"; Flags: checkedonce
 
 [Files]
 Source: "payload\Myify.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -48,7 +48,7 @@ Name: "{group}\Myify settings and updates"; Filename: "{sys}\WindowsPowerShell\v
 Name: "{autodesktop}\Spotify (Myify)"; Filename: "{app}\Myify.exe"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\Myify.exe"; Description: "Open Spotify and Myify tools"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\Myify.exe"; Description: "Open Spotify with Myify"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Remove -CloseSpotify -Quiet"; Flags: runhidden waituntilterminated skipifdoesntexist; RunOnceId: "RestoreSpotifyAndUpdates"

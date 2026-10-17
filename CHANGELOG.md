@@ -5,7 +5,7 @@
 - Fix direct MyifyDesktop startup when the data folder or bridge.json does not exist. Initialize private connection settings safely, preserve existing credentials, and show readable configuration errors.
 
 - Install a native Myify.exe launcher and target it from Start, the default desktop shortcut, and post-install launch controls.
-- Show desktop tools on explicit launch and reuse their existing single instance. Keep Spotify's compatibility checks, repair and version-protection policy in the existing manager.
+- Open Spotify with the desktop helper hidden, without an extra tools window. Reuse its single instance and keep advanced tools available on demand. Keep compatibility checks, repair and version protection in the existing manager.
 - Capture manager startup failures in launcher.log and show an error instead of silently disappearing.
 - Migrate recognized old Myify launcher shortcuts and explain replacing a cached PowerShell taskbar pin.
 - Package the launcher, tools and both English models in one installer asset; update setup, launch, pinning and troubleshooting instructions.

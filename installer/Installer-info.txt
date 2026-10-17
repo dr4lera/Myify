@@ -8,7 +8,8 @@ Generate lyrics for a local song. Audio is processed on your own computer.
 This upgrades existing Myify installations while keeping saved user settings.
 
 This is the only installer you need. The installed Myify.exe launcher opens
-Spotify and shows Myify desktop tools. Setup creates a Spotify (Myify) desktop
+Spotify and starts its helper in the background, without a second tools window.
+Setup creates a Spotify (Myify) desktop
 shortcut by default; leave that option checked. Double-click it to launch.
 You can also use Start > Myify > Spotify (Myify).
 For a taskbar shortcut, pin that Start menu entry (More > Pin to taskbar), or

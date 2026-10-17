@@ -11,7 +11,7 @@
 3. Run the installer and confirm the folder containing your `Spotify.exe` and `Apps\xpui.spa`. Common standalone locations are detected; browse to a custom folder if needed. Spotify closes while the verified patch is installed. Launch **Spotify (Myify)** from the **Myify** Start menu group.
 4. Click the sliders beside Spotify's lyrics control, or open Spotify Settings and find **Myify**.
 
-Version 0.4.3 installs a regular **Myify.exe** launcher. **Start → Myify → Spotify (Myify)** opens Spotify and brings up Myify desktop tools; launching it again opens the existing tools. To pin it, right-click **Spotify (Myify)** in Start and choose **More → Pin to taskbar**, or open `%LOCALAPPDATA%\SpotifyNativeEnhancer` in File Explorer and pin **Myify.exe**. Replace any old PowerShell-based Myify pin. Pinning the normally running Spotify icon starts Spotify directly and does not run Myify's tools launcher.
+Version 0.4.3 installs a regular **Myify.exe** launcher and creates a **Spotify (Myify)** desktop shortcut by default. It opens Spotify and starts the desktop helper in the background, without a second tools window. To pin it, right-click **Spotify (Myify)** in Start and choose **More → Pin to taskbar**, or pin the desktop shortcut. Pinning the normally running Spotify icon starts Spotify directly and does not run Myify's tools launcher.
 
 Download only **Myify-Setup-0.4.3.exe** from the release's Assets. It contains the launcher, desktop tools and both English models. There is no separate launcher installer or required source ZIP. Existing lyrics, themes and backups are preserved during upgrade. If startup fails, Myify displays an error and captures details in `%LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log`.
 

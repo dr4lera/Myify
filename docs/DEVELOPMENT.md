@@ -22,7 +22,7 @@ Pass `-InnoCompiler "C:\path\to\ISCC.exe"` or `-GccCompiler "C:\path\to\gcc.exe"
 - `scripts/build.cjs`: concatenates original Myify core and adapter, checking JavaScript syntax. No proprietary source is used as build input.
 - `installer/Engine.psm1`: exact build/content validation, archive patching, original backup/receipt, reversible version protection and safe restoration.
 - `installer/Manager.ps1`: command-line actions and Windows Forms manager.
-- `launcher/main.c` and `Build-Launcher.ps1`: pinnable executable entry point, relative installed-path resolution, silent manager subprocess with captured errors, and visible desktop-tools launch.
+- `launcher/main.c` and `Build-Launcher.ps1`: pinnable executable entry point, relative installed-path resolution, and silent manager subprocess with captured errors. The manager starts the desktop helper hidden; the launcher does not open a second tools window.
 - `installer/Myify.iss`: per-user installer; compatibility check and verified installation occur before setup reports success. Uses the existing installation ID to preserve upgrades.
 - `installer/supported-build.json`: executable version, original archive hash, and original resource-entry hashes. Contains no resource bytes.
 

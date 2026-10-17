@@ -11,8 +11,11 @@
 
 /* A stable, pinnable entry point. All install paths come from this executable. */
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command, int show) {
-    (void)instance; (void)previous; (void)show;
-    int check = wcscmp(command, L"--check") == 0;
+    (void)instance; (void)previous; (void)show; (void)command;
+    int argc = 0;
+    LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    int check = argv && argc == 2 && wcscmp(argv[1], L"--check") == 0;
+    if (argv) LocalFree(argv);
     wchar_t root[32768], manager[32768], desktop[32768], powershell[32768];
     wchar_t arguments[32768], data[32768], logpath[32768], message[2048];
     DWORD count = GetModuleFileNameW(NULL, root, 32768);
@@ -60,13 +63,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command, int s
         swprintf(message, 2048, L"Myify could not finish starting (manager code %lu).\n\nDetails: %.1500ls\n\nRun setup again if files are missing, or check the supported Spotify version.", exitcode, logpath);
         result = 4; goto failed;
     }
-    if (check) return 0;
-    /* Launch without --hidden: the desktop application's single-instance bridge
-       brings its existing tools window up when it is already running. */
-    if ((INT_PTR)ShellExecuteW(NULL, L"open", desktop, NULL, root, SW_SHOWNORMAL) <= 32) {
-        swprintf(message, 2048, L"Spotify started, but Windows could not open Myify desktop tools. Run setup again.");
-        result = 5; goto failed;
-    }
+    /* The manager starts the helper with --hidden. Advanced tools are opened
+       explicitly from Spotify or their separate Start menu entry. */
     return 0;
 failed:
     if (!check) MessageBoxW(NULL, message, L"Myify startup", MB_OK | MB_ICONERROR);
