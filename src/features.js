@@ -132,7 +132,7 @@
   async function exportBackup(){const backgroundAssets=await Backgrounds.exportAssets(state);let desktop=null;try{desktop=await desktopRequest('/library');}catch{}download('myify-backup.json',JSON.stringify({...state,backgroundAssets,...(desktop?{desktopLibrary:desktop}:{})},null,2));say(desktop?'Backup includes settings, lyrics, loops, bookmarks and desktop file mappings.':'Settings backed up. Desktop tools were unavailable; their library mappings were not included.');}
   function extraTick(){
     syncDesktop();sleepTick();
-    const info=document.querySelector('[data-le-compatibility]');if(info){const c=compatibility;info.textContent=`Myify 0.4.2 · Tested Spotify 1.3.5.3058. ${desktopConnected?'Desktop tools connected.':'Desktop tools disconnected.'} ${c?`Installed Spotify: ${c.installedSpotify} · ${c.supported?'Supported':'Compatibility not confirmed'}.`:''}`;}
+    const info=document.querySelector('[data-le-compatibility]');if(info){const c=compatibility;info.textContent=`Myify 0.4.3 · Tested Spotify 1.3.5.3058. ${desktopConnected?'Desktop tools connected.':'Desktop tools disconnected.'} ${c?`Installed Spotify: ${c.installedSpotify} · ${c.supported?'Supported':'Compatibility not confirmed'}.`:''}`;}
     document.querySelectorAll('[data-le-generation]').forEach(node=>{node.textContent=desktopConnected?desktopStatus:'';});
     if(window._myifyLoopUri!==currentUri){window._myifyLoopUri=currentUri;renderSavedLoops();}
   }

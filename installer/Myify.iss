@@ -1,4 +1,4 @@
-#define AppVersion "0.4.2"
+#define AppVersion "0.4.3"
 [Setup]
 AppId={{1C840779-AD93-40D8-9679-EA7560E26881}
 AppName=Myify
@@ -9,6 +9,7 @@ AppSupportURL=https://github.com/dr4lera/Myify/issues
 AppUpdatesURL=https://github.com/dr4lera/Myify/releases
 DefaultDirName={localappdata}\SpotifyNativeEnhancer
 DefaultGroupName=Myify
+UsePreviousGroup=no
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -30,6 +31,7 @@ Name: pinupdates; Description: "Keep this tested Spotify version (reversible in 
 Name: desktopicon; Description: "Create a protected Spotify shortcut on the desktop"; Flags: unchecked
 
 [Files]
+Source: "payload\Myify.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\Engine.psm1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\Manager.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\native-loader.js"; DestDir: "{app}"; Flags: ignoreversion
@@ -41,12 +43,12 @@ Source: "payload\desktop\*"; DestDir: "{app}\desktop"; Flags: ignoreversion recu
 
 [Icons]
 Name: "{group}\Myify desktop tools"; Filename: "{app}\desktop\MyifyDesktop.exe"; WorkingDir: "{app}\desktop"
-Name: "{group}\Spotify (Myify)"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Launch"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"
+Name: "{group}\Spotify (Myify)"; Filename: "{app}\Myify.exe"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"
 Name: "{group}\Myify settings and updates"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Manager"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"
-Name: "{autodesktop}\Spotify (Myify)"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Launch"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autodesktop}\Spotify (Myify)"; Filename: "{app}\Myify.exe"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Launch"; Description: "Open enhanced Spotify"; Flags: postinstall nowait skipifsilent runhidden
+Filename: "{app}\Myify.exe"; Description: "Open Spotify and Myify tools"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Remove -CloseSpotify -Quiet"; Flags: runhidden waituntilterminated skipifdoesntexist; RunOnceId: "RestoreSpotifyAndUpdates"
@@ -102,4 +104,37 @@ end;
 procedure RegisterPreviousData(PreviousDataKey: Integer);
 begin
   SetPreviousData(PreviousDataKey, 'SpotifyRoot', SpotifyDirectory());
+end;
+
+procedure UpdateLegacyLauncher(const ShortcutPath: String);
+var Shell, Shortcut: Variant; Args: String;
+begin
+  if not FileExists(ShortcutPath) then Exit;
+  try
+    Shell := CreateOleObject('WScript.Shell');
+    Shortcut := Shell.CreateShortcut(ShortcutPath);
+    Args := Shortcut.Arguments;
+    Args := Lowercase(Args);
+    if (Pos(Lowercase(ExpandConstant('{app}\Manager.ps1')), Args) = 0) or
+       (Pos('-action launch', Args) = 0) then Exit;
+    Shortcut.TargetPath := ExpandConstant('{app}\Myify.exe');
+    Shortcut.Arguments := '';
+    Shortcut.WorkingDirectory := ExpandConstant('{app}');
+    Shortcut.IconLocation := GetSpotifyExe('') + ',0';
+    Shortcut.WindowStyle := 1;
+    Shortcut.Save;
+    Log('Updated previous Myify launch shortcut: ' + ShortcutPath);
+  except
+    Log('Could not migrate a previous Myify shortcut. Use the new Start menu entry.');
+  end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    UpdateLegacyLauncher(ExpandConstant('{userprograms}\Spotify (Myify).lnk'));
+    UpdateLegacyLauncher(ExpandConstant('{userprograms}\Spotify Native Enhancer\Spotify (Myify).lnk'));
+    UpdateLegacyLauncher(ExpandConstant('{userappdata}\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\Spotify (Myify).lnk'));
+  end;
 end;

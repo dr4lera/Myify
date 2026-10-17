@@ -6,10 +6,14 @@
 
 ## Install
 
-1. Open **[Releases](https://github.com/dr4lera/Myify/releases)** and download **Myify-Setup-0.4.2.exe** from **Assets**. GitHub's source ZIP is source code, not the installer. Run it over an existing Myify installation to upgrade.
+1. Open **[Releases](https://github.com/dr4lera/Myify/releases)** and download **Myify-Setup-0.4.3.exe** from **Assets**. GitHub's source ZIP is source code, not the installer. Run it over an existing Myify installation to upgrade.
 2. You need the standalone Windows desktop Spotify **1.3.5.3058** already installed. Other builds and the Microsoft Store distribution are not supported by this release.
 3. Run the installer and confirm the folder containing your `Spotify.exe` and `Apps\xpui.spa`. Common standalone locations are detected; browse to a custom folder if needed. Spotify closes while the verified patch is installed. Launch **Spotify (Myify)** from the **Myify** Start menu group.
 4. Click the sliders beside Spotify's lyrics control, or open Spotify Settings and find **Myify**.
+
+Version 0.4.3 installs a regular **Myify.exe** launcher. **Start → Myify → Spotify (Myify)** opens Spotify and brings up Myify desktop tools; launching it again opens the existing tools. To pin it, right-click **Spotify (Myify)** in Start and choose **More → Pin to taskbar**, or open `%LOCALAPPDATA%\SpotifyNativeEnhancer` in File Explorer and pin **Myify.exe**. Replace any old PowerShell-based Myify pin. Pinning the normally running Spotify icon starts Spotify directly and does not run Myify's tools launcher.
+
+Download only **Myify-Setup-0.4.3.exe** from the release's Assets. It contains the launcher, desktop tools and both English models. There is no separate launcher installer or required source ZIP. Existing lyrics, themes and backups are preserved during upgrade. If startup fails, Myify displays an error and captures details in `%LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log`.
 
 The installer is unsigned. It contains Myify scripts and compatibility hashes, not Spotify, songs, credentials, or decompiled source. Spotify sign-in and normal account requirements still apply. Myify does not unlock Premium or bypass content access.
 

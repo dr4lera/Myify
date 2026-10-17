@@ -1,5 +1,15 @@
 # User guide
 
+## Launching and pinning Myify
+
+Install or upgrade with the single **Myify-Setup-0.4.3.exe** download. Then open **Start → Myify → Spotify (Myify)**. Its target is the installed `Myify.exe`, which runs the compatibility/repair manager, starts Spotify, and opens Myify desktop tools visibly. A repeated launch shows the existing tools instead of creating a second tools server.
+
+To pin the launcher, right-click **Spotify (Myify)** in Start → **More → Pin to taskbar**. Alternatively, open `%LOCALAPPDATA%\SpotifyNativeEnhancer` in File Explorer and pin **Myify.exe**. Unpin any previous broken Myify entry first. Pinning the icon of a normally opened Spotify app starts Spotify directly; it does not start the Myify desktop tools.
+
+The installer updates recognized old Myify launcher shortcuts. Windows can retain a cached taskbar target, so replace an old pin if it still opens PowerShell or does nothing. Do not move `Myify.exe` out of its installed folder; it locates `Manager.ps1` and desktop tools beside itself. No second installer or companion ZIP is required.
+
+If startup fails, the launcher shows an error with the diagnostic location: `%LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log`. The existing manager log remains `manager.log` in that folder. Launching `Myify.exe --check` validates the installed compatibility path without opening Spotify or desktop tools.
+
 ## Local lyrics
 
 Enable Local Files in Spotify and play the desired item first. Click the sliders beside the lyrics control, choose **Import .lrc**, and select your file. Choose **Open lyrics** to see synchronized text in Spotify's normal view. Each import attaches to that item's Spotify URI, including local files, music and episodes. Changing a local file's metadata can change its URI; import again if necessary.

@@ -4,7 +4,7 @@ One installer includes the Spotify enhancements, desktop tools, local transcript
 
 ## Upgrade
 
-Run `Myify-Setup-0.4.0.exe` over the existing Myify installation. It retains the previous Windows installer identity, installation location, original-resource backup, update-protection preferences, Spotify installation receipt, and renderer storage key. Spotify closes during installation. Desktop transcription work stops; completed LRC files remain saved. Launch **Spotify (Myify)** afterward to start both Spotify and Myify's desktop tools.
+Run the single `Myify-Setup-0.4.3.exe` over the existing Myify installation. It retains the previous Windows installer identity, installation location, original-resource backup, update-protection preferences, Spotify installation receipt, and renderer storage key. Spotify closes during installation. Desktop transcription work stops; completed LRC files remain saved. Launch **Start → Myify → Spotify (Myify)** afterward: the installed `Myify.exe` starts Spotify and opens the existing desktop tools. Pin that launcher rather than a normally opened Spotify icon. See [launch and pinning](USER-GUIDE.md#launching-and-pinning-myify); no separate launcher download is needed.
 
 Old lyrics, bookmarks, offsets, themes and saved theme names are loaded using the same storage schema. New keyboard settings receive defaults automatically. Export a backup from Myify Settings before clearing Spotify's browser data. Myify uninstall restores the original supported Spotify resources and preserves user data.
 

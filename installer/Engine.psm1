@@ -117,7 +117,7 @@ function Install-Enhancer {
   try{
     Copy-Item -LiteralPath $patch -Destination $script:UI -Force
     if((FileHash $script:UI)-ne(FileHash $patch)){throw 'Installed archive failed verification.'}
-    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.4.2';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
+    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.4.3';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
     if($ProtectUpdates){Enable-UpdateProtection -SkipShortcuts:$SkipShortcuts}
   }catch{Copy-Item -LiteralPath $rollback -Destination $script:UI -Force;if($previous){Write-Json $script:Receipt $previous}elseif(Test-Path -LiteralPath $script:Receipt){Remove-Item -LiteralPath $script:Receipt};throw}
   return Get-EnhancerStatus
@@ -202,13 +202,13 @@ function Start-ProtectedSpotify {
   if($status.supported-and-not $status.patched){$null=Install-Enhancer -CloseSpotify}
   if($status.updatesPinned){
     $protection=Read-Json $script:Protection
-    foreach($entry in $protection.paths){if(-not(Test-Path -LiteralPath $entry.path)){[IO.File]::WriteAllText($entry.path,$script:BlockMarker,[Text.UTF8Encoding]::new($false));[IO.File]::SetAttributes($entry.path,[IO.FileAttributes]::ReadOnly)}}
+    foreach($entry in $protection.paths){if(-not(Test-Path -LiteralPath $entry.path)){[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($entry.path))|Out-Null;[IO.File]::WriteAllText($entry.path,$script:BlockMarker,[Text.UTF8Encoding]::new($false));[IO.File]::SetAttributes($entry.path,[IO.FileAttributes]::ReadOnly)}}
   }
   $arguments=@();if($status.updatesPinned){$arguments+=@('--update-endpoint-override=http://127.0.0.1:9/','--disable-update-restarts')}
   if($DebugPort-gt 0){$arguments+=@('--remote-debugging-port='+$DebugPort,'--remote-debugging-address=127.0.0.1')}
   $desktop=Join-Path $PSScriptRoot 'desktop\MyifyDesktop.exe'
   if(Test-Path -LiteralPath $desktop){Start-Process -FilePath $desktop -ArgumentList @('--hidden','--data-root',('"'+$script:DataRoot+'"')) -WindowStyle Hidden}
-  if($arguments.Count){Start-Process -FilePath $script:Exe -ArgumentList $arguments -WindowStyle Hidden}else{Start-Process -FilePath $script:Exe -WindowStyle Hidden}
+  if($arguments.Count){Start-Process -FilePath $script:Exe -ArgumentList $arguments -WindowStyle Normal}else{Start-Process -FilePath $script:Exe -WindowStyle Normal}
 }
 function Remove-Enhancer {
   param([switch]$CloseSpotify)

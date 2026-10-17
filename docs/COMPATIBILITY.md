@@ -2,7 +2,7 @@
 
 ## Supported platform
 
-Release 0.4.2 supports Windows x64-compatible standalone desktop Spotify **1.3.5.3058**, in a writable standalone installation folder (normally `%APPDATA%\Spotify`). It uses Windows PowerShell 5.1 and includes its own desktop runtime and English lyric models. End users do not need Python, FFmpeg, Node, Spicetify or Inno Setup. The Store package, other Spotify builds, macOS and Linux are unsupported. See the [combined tools guide](COMBINED-TOOLS.md) for upgrade and desktop connection details.
+Release 0.4.3 supports Windows x64-compatible standalone desktop Spotify **1.3.5.3058**, in a writable standalone installation folder (normally `%APPDATA%\Spotify`). It uses Windows PowerShell 5.1 and includes its own native launcher, desktop runtime and English lyric models in one installer. End users do not need Python, FFmpeg, Node, GCC, Spicetify or Inno Setup. The Store package, other Spotify builds, macOS and Linux are unsupported. See the [combined tools guide](COMBINED-TOOLS.md) for upgrade and desktop connection details.
 
 The compatibility manifest records original resource-entry SHA-256 hashes and the tested executable version. Installation verifies the contents, backs up the original resource archive, adds Myify's loader and a bootstrap script reference, and writes a receipt. Unknown modifications and unsupported builds are refused. Previously installed versions of this same enhancement are recognized. This is not a promise of compatibility across Spotify updates.
 
@@ -36,7 +36,8 @@ For silent deployment, pass `/SPOTIFYDIR="C:\path\to\Spotify"`. A matching versi
 | Lyrics absent | Play the item used for import, use timed UTF-8 LRC, and choose Open lyrics. Metadata changes may have changed a local URI. |
 | Timing wrong | Adjust Delay (ms); positive delays show lines later. |
 | Theme import rejected | Use a Myify/exported legacy theme with version 1 and seven valid hex color fields. |
-| Download confusion | Download `Myify-Setup-0.3.1.exe` under release Assets, not GitHub's source-code ZIP. |
+| Download confusion | Download only `Myify-Setup-0.4.3.exe` under release Assets; it includes the launcher, tools and both English models. |
+| Shortcut does nothing / tools stay hidden | Upgrade with 0.4.3, use **Start → Myify → Spotify (Myify)** and replace any old taskbar pin. Startup details are in `%LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log`. |
 
 ## Recovery and diagnostics
 

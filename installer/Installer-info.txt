@@ -7,17 +7,24 @@ LRC Maker install is needed. Launch Spotify (Myify) after installation, then use
 Generate lyrics for a local song. Audio is processed on your own computer.
 This upgrades existing Myify installations while keeping saved user settings.
 
+This is the only installer you need. The installed Myify.exe launcher opens
+Spotify and shows Myify desktop tools. Use Start > Myify > Spotify (Myify).
+For a taskbar shortcut, pin that Start menu entry (More > Pin to taskbar), or
+pin Myify.exe in %LOCALAPPDATA%\SpotifyNativeEnhancer. Replace any older Myify
+pin that points to PowerShell. Startup errors show a message and are recorded
+in %LOCALAPPDATA%\SpotifyNativeEnhancerData\launcher.log.
+
 Spotify will close while the UI patch is applied. An original resource backup
 and an installation receipt are saved under your local application data.
 
 The optional version protection blocks the known update staging paths and adds
 update-suppression flags to managed shortcuts/startup. You can reverse this in
-Enhancer settings and updates, or by uninstalling. Manual reinstalls or a future
+Myify settings and updates, or by uninstalling. Manual reinstalls or a future
 Spotify updater may bypass this protection. Future app versions require a tested
 compatible patch; this installer will not patch an unknown build.
 
 Custom themes, lyrics and bookmarks stay in Spotify's local browser storage.
-Export backups from Local enhancements in Spotify Settings before clearing data.
+Export backups from Myify in Spotify Settings before clearing data.
 
 After installation: play any supported item, click the sliders beside Spotify's
 lyrics control, and use Import .lrc or Playback tools. Set A, move forward, and

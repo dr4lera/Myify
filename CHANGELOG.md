@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.3 - Reliable launcher and taskbar instructions
+
+- Install a native Myify.exe launcher and target it from Start, optional Desktop, and post-install launch controls.
+- Show desktop tools on explicit launch and reuse their existing single instance. Keep Spotify's compatibility checks, repair and version-protection policy in the existing manager.
+- Capture manager startup failures in launcher.log and show an error instead of silently disappearing.
+- Migrate recognized old Myify launcher shortcuts and explain replacing a cached PowerShell taskbar pin.
+- Package the launcher, tools and both English models in one installer asset; update setup, launch, pinning and troubleshooting instructions.
+- Add native launcher fixture tests for Unicode/spaced paths, repeated launch and error handling.
+
+## 0.4.2 - Backgrounds and fonts
+
+- Apply uploaded fonts to playlist/navigation labels, preserve animated GIF backgrounds, handle images without MIME metadata, and retain image/font assets in theme and full-backup exports.
+
 ## 0.4.1 - Unified theme editor
 
 - Replace the old color-only layout with one editor for colors, hex values, typography, lyric sizing and background images, alongside a live preview.

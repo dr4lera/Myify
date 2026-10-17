@@ -234,7 +234,7 @@
   }
   document.addEventListener('keydown',handleShortcut);
   window.addEventListener('storage',e=>{if(e.key===KEY){try{state=e.newValue?Core.validateState(JSON.parse(e.newValue)):Core.emptyState();notify();appearance();}catch{}}});
-  window.SpotifyNativeEnhancer={version:'0.4.2',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),openEditor,getStatus:()=>({version:'0.4.2',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,desktopConnected,compatibility,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
+  window.SpotifyNativeEnhancer={version:'0.4.3',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),openEditor,getStatus:()=>({version:'0.4.3',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,desktopConnected,compatibility,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
   setInterval(tick,200);
   Backgrounds.subscribe(()=>{appearance();notify();});
 })();
