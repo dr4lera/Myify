@@ -2,7 +2,7 @@
 
 ## Supported platform
 
-Release 0.3.0 supports Windows x64-compatible standalone desktop Spotify **1.3.5.3058**, installed at `%APPDATA%\Spotify`. It uses Windows PowerShell 5.1, Windows Forms and built-in .NET compression. End users do not need Node, Spicetify or Inno Setup. The Store package, other Spotify builds, macOS and Linux are unsupported.
+Release 0.3.1 supports Windows x64-compatible standalone desktop Spotify **1.3.5.3058**, in a writable standalone installation folder (normally `%APPDATA%\Spotify`). It uses Windows PowerShell 5.1, Windows Forms and built-in .NET compression. End users do not need Node, Spicetify or Inno Setup. The Store package, other Spotify builds, macOS and Linux are unsupported.
 
 The compatibility manifest records original resource-entry SHA-256 hashes and the tested executable version. Installation verifies the contents, backs up the original resource archive, adds Myify's loader and a bootstrap script reference, and writes a receipt. Unknown modifications and unsupported builds are refused. Previously installed versions of this same enhancement are recognized. This is not a promise of compatibility across Spotify updates.
 
@@ -18,6 +18,12 @@ Original staging data, shortcut contents and startup value are recorded for rest
 
 Spotify may remove a staging marker. The saved protection policy remains enabled and managed launches recreate missing markers and apply the flags. Use **Spotify (Myify)** for checking and repair. Manual reinstalls, other launch routes and changed updater behavior can bypass protection. Updates can contain security fixes; choose **Allow Spotify updates** when you want to update, then use a compatible Myify release if one becomes available.
 
+## Finding your installation
+
+Setup now offers a **Locate Spotify** page. Choose the folder containing both `Spotify.exe` and `Apps\xpui.spa`. It checks common roaming/local/Programs/Program Files paths, and remembers a successfully selected folder for upgrades. The manager reads that same folder from the installation receipt. A shared Program Files installation may require write permissions; this per-user setup does not request elevation.
+
+For silent deployment, pass `/SPOTIFYDIR="C:\path\to\Spotify"`. A matching version in the About window is not enough: setup must find the actual standalone executable and matching resources. Microsoft Store packages are not supported. Version 0.3.0 displayed a misleading wrong-version warning when its hardcoded location was missing; use 0.3.1 instead.
+
 ## Troubleshooting
 
 | Symptom | Action |
@@ -30,7 +36,7 @@ Spotify may remove a staging marker. The saved protection policy remains enabled
 | Lyrics absent | Play the item used for import, use timed UTF-8 LRC, and choose Open lyrics. Metadata changes may have changed a local URI. |
 | Timing wrong | Adjust Delay (ms); positive delays show lines later. |
 | Theme import rejected | Use a Myify/exported legacy theme with version 1 and seven valid hex color fields. |
-| Download confusion | Download `Myify-Setup-0.3.0.exe` under release Assets, not GitHub's source-code ZIP. |
+| Download confusion | Download `Myify-Setup-0.3.1.exe` under release Assets, not GitHub's source-code ZIP. |
 
 ## Recovery and diagnostics
 

@@ -1,8 +1,7 @@
 [CmdletBinding()]
-param([ValidateSet('Install','Repair','Launch','Manager','PinUpdates','EnableUpdates','Remove','Status')][string]$Action='Manager',[switch]$CloseSpotify,[switch]$ProtectUpdates,[switch]$Quiet,[switch]$SkipShortcuts,[string]$SpotifyRoot,[string]$DataRoot,[string]$LocalSpotifyRoot,[int]$DebugPort=0,[string]$PreviewOutput)
+param([ValidateSet('Install','Repair','Launch','Manager','PinUpdates','EnableUpdates','Remove','Status','Check')][string]$Action='Manager',[switch]$CloseSpotify,[switch]$ProtectUpdates,[switch]$Quiet,[switch]$SkipShortcuts,[string]$SpotifyRoot,[string]$DataRoot,[string]$LocalSpotifyRoot,[int]$DebugPort=0,[string]$PreviewOutput,[string]$ErrorOutput)
 $ErrorActionPreference='Stop'
 Import-Module (Join-Path $PSScriptRoot 'Engine.psm1') -Force
-Initialize-Enhancer -SpotifyRoot $SpotifyRoot -DataRoot $DataRoot -LocalSpotifyRoot $LocalSpotifyRoot
 function Show-Manager {
   Add-Type -AssemblyName System.Windows.Forms
   Add-Type -AssemblyName System.Drawing
@@ -25,7 +24,9 @@ function Show-Manager {
   $form.Add_Shown({$form.Activate()});[void]$form.ShowDialog()
 }
 try{
+  Initialize-Enhancer -SpotifyRoot $SpotifyRoot -DataRoot $DataRoot -LocalSpotifyRoot $LocalSpotifyRoot
   switch($Action){
+    'Check' {$null=Assert-Supported;$null=Test-SpotifyContent (Join-Path (Get-EnhancerStatus).spotifyRoot 'Apps\xpui.spa') -AllowEnhancer;Write-Output 'Compatible Spotify installation verified.'}
     'Install' {Install-Enhancer -CloseSpotify:$CloseSpotify -ProtectUpdates:$ProtectUpdates -SkipShortcuts:$SkipShortcuts|ConvertTo-Json -Depth 6}
     'Repair' {$s=Get-EnhancerStatus;Install-Enhancer -CloseSpotify:$CloseSpotify -ProtectUpdates:$s.updatesPinned -SkipShortcuts:$SkipShortcuts|ConvertTo-Json -Depth 6}
     'Launch' {Start-ProtectedSpotify -DebugPort $DebugPort}
@@ -37,6 +38,7 @@ try{
   }
   exit 0
 }catch{
+  if($ErrorOutput){[IO.File]::WriteAllText($ErrorOutput,$_.Exception.Message,[Text.UTF8Encoding]::new($false))}
   $logRoot=if($DataRoot){$DataRoot}else{Join-Path $env:LOCALAPPDATA 'SpotifyNativeEnhancerData'}
   [IO.Directory]::CreateDirectory($logRoot)|Out-Null
   [IO.File]::AppendAllText((Join-Path $logRoot 'manager.log'),((Get-Date).ToString('o')+' '+$_.Exception.Message+"`r`n"))

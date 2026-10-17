@@ -6,4 +6,4 @@ Myify includes no analytics, hosted backend, remote script loader or catalog lyr
 
 Report reproducible issues without tokens, proprietary app files, personal exports or raw private analysis. For a sensitive vulnerability, use GitHub's private vulnerability reporting if available rather than posting exploit details publicly. If that facility is unavailable, open an issue requesting a private reporting channel without sensitive details.
 
-Only 0.3.0 is currently supported, on the exact Spotify build listed in the compatibility documentation. Installers are unsigned. Obtain releases from this repository and compare SHA-256 checksums.
+Only 0.3.1 is currently supported, on the exact Spotify build listed in the compatibility documentation. Installers are unsigned. Obtain releases from this repository and compare SHA-256 checksums.

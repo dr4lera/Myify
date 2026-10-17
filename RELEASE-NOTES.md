@@ -1,11 +1,12 @@
-Myify — Spotify local themes and lyrics tool
+Myify 0.3.1 fixes installer discovery and misleading version errors.
 
-Download **Myify-Setup-0.3.0.exe** below under **Assets** to install. **Source code (zip/tar.gz)** contains the open-source project and is not the Windows installer.
+**Download Myify-Setup-0.3.1.exe under Assets below.** Replace the previous 0.3.0 installer. Source ZIP files are not the installer.
 
-Requires standalone Windows desktop Spotify **1.3.5.3058**, already installed at `%APPDATA%\Spotify`. This release refuses other builds. Normal Spotify sign-in/account requirements apply.
+- New **Locate Spotify** folder picker. Select the folder containing `Spotify.exe` and `Apps\xpui.spa`, including custom standalone locations.
+- Numeric executable-version validation and strict original-resource hashes remain enforced. Only Spotify **1.3.5.3058** is supported; Store packages are not.
+- Setup now displays the actual error and detected path/version. A matching About version no longer gets rejected solely because Spotify is outside the old fixed folder.
+- The selected folder is remembered for manager launches and future upgrades. Silent setup accepts `/SPOTIFYDIR="C:\path\to\Spotify"`.
 
-Includes synchronized `.lrc` import for local songs/music/episodes, custom themes with JSON sharing, A–B loops, bookmarks, seeking, sleep timer, backups and a Windows manager. Set B starts immediately even from pause; local-file seeking uses the native local collection with confirmed positions.
+Includes local LRC lyrics, themes, A�B looping, bookmarks, sleep timer, backup/repair and reversible update protection. Normal Spotify sign-in/account requirements apply. MIT source and full docs are in the repository; no Spotify binaries or recovered source are included.
 
-The installer includes reversible update protection for this tested build. Use the **Spotify (Myify)** shortcut. Choose **Allow Spotify updates** in the manager to reverse it. Future builds require tested compatibility; protection is not guaranteed against changed updaters or manual reinstalls.
-
-MIT-licensed source and full installation, feature, recovery and developer documentation are in the repository. No Spotify app code, music, credentials or recovered source is distributed. The installer is unsigned. Use `Get-FileHash .\Myify-Setup-0.3.0.exe -Algorithm SHA256` and compare with **SHA256SUMS** below.
+The installer is unsigned. Compare `Get-FileHash .\Myify-Setup-0.3.1.exe -Algorithm SHA256` with the attached SHA256SUMS.

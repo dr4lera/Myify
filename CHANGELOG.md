@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 — Initial public Myify release
+## 0.3.1 — Initial public Myify release
 
 - Publish the Windows native integration as **Myify — Spotify local themes and lyrics tool**, with MIT source, documentation and downloadable installer.
 - Import synchronized local LRC lyrics into the native renderer; manage lyrics and backup saved state.

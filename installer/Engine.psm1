@@ -7,9 +7,19 @@ $script:BlockMarker = 'Spotify Native Enhancer update staging lock v1'
 
 function Initialize-Enhancer {
   param([string]$SpotifyRoot,[string]$DataRoot,[string]$LocalSpotifyRoot)
-  if (-not $SpotifyRoot) { $SpotifyRoot=Join-Path $env:APPDATA 'Spotify' }
   if (-not $DataRoot) { $DataRoot=Join-Path $env:LOCALAPPDATA 'SpotifyNativeEnhancerData' }
   if (-not $LocalSpotifyRoot) { $LocalSpotifyRoot=Join-Path $env:LOCALAPPDATA 'Spotify' }
+  if (-not $SpotifyRoot) {
+    $saved=Read-Json (Join-Path $DataRoot 'installation.json')
+    if($saved -and $saved.spotifyRoot){$SpotifyRoot=$saved.spotifyRoot}
+    else {
+      $candidates=@((Join-Path $env:APPDATA 'Spotify'),(Join-Path $env:LOCALAPPDATA 'Spotify'),(Join-Path $env:LOCALAPPDATA 'Programs\Spotify'))
+      if($env:ProgramFiles){$candidates+=Join-Path $env:ProgramFiles 'Spotify'}
+      if(${env:ProgramFiles(x86)}){$candidates+=Join-Path ${env:ProgramFiles(x86)} 'Spotify'}
+      $SpotifyRoot=$candidates | Where-Object{(Test-Path -LiteralPath (Join-Path $_ 'Spotify.exe')) -and (Test-Path -LiteralPath (Join-Path $_ 'Apps\xpui.spa'))} | Select-Object -First 1
+      if(-not $SpotifyRoot){$SpotifyRoot=Join-Path $env:APPDATA 'Spotify'}
+    }
+  }
   $script:SpotifyRoot=[IO.Path]::GetFullPath($SpotifyRoot)
   $script:DataRoot=[IO.Path]::GetFullPath($DataRoot)
   $script:LocalSpotifyRoot=[IO.Path]::GetFullPath($LocalSpotifyRoot)
@@ -25,10 +35,14 @@ function BytesHash([byte[]]$Bytes) { $sha=[Security.Cryptography.SHA256]::Create
 function Read-Entry($Entry) { $memory=[IO.MemoryStream]::new();$stream=$Entry.Open();try{$stream.CopyTo($memory);return ,$memory.ToArray()}finally{$stream.Dispose();$memory.Dispose()} }
 function Write-Json([string]$Path,$Value) { [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($Path))|Out-Null;[IO.File]::WriteAllText($Path+'.new',($Value|ConvertTo-Json -Depth 12),[Text.UTF8Encoding]::new($false));Move-Item -LiteralPath ($Path+'.new') -Destination $Path -Force }
 function Read-Json([string]$Path) { if(Test-Path -LiteralPath $Path){return Get-Content -LiteralPath $Path -Raw|ConvertFrom-Json};return $null }
+function Get-SpotifyVersion([string]$Path) {
+  $info=(Get-Item -LiteralPath $Path).VersionInfo
+  return '{0}.{1}.{2}.{3}' -f $info.FileMajorPart,$info.FileMinorPart,$info.FileBuildPart,$info.FilePrivatePart
+}
 function Assert-Supported {
-  if(-not(Test-Path -LiteralPath $script:Exe)){throw 'Spotify desktop was not found. Install the desktop app first.'}
-  $version=(Get-Item -LiteralPath $script:Exe).VersionInfo.FileVersion
-  if($version -ne $script:Builds.spotifyVersion){throw "Spotify $version is not a tested build. This installer supports $($script:Builds.spotifyVersion). Spotify was not patched."}
+  if(-not(Test-Path -LiteralPath $script:Exe)){throw "Spotify.exe was not found in $script:SpotifyRoot. Select the folder containing your standalone desktop Spotify.exe. Microsoft Store packages are not supported."}
+  $version=Get-SpotifyVersion $script:Exe
+  if($version -ne $script:Builds.spotifyVersion){throw "Detected Spotify $version at $script:Exe. This release supports $($script:Builds.spotifyVersion). Spotify was not patched."}
   return $version
 }
 function Test-SpotifyContent([string]$Path,[switch]$AllowEnhancer) {
@@ -99,7 +113,7 @@ function Install-Enhancer {
   try{
     Copy-Item -LiteralPath $patch -Destination $script:UI -Force
     if((FileHash $script:UI)-ne(FileHash $patch)){throw 'Installed archive failed verification.'}
-    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.3.0';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
+    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.3.1';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
     if($ProtectUpdates){Enable-UpdateProtection -SkipShortcuts:$SkipShortcuts}
   }catch{Copy-Item -LiteralPath $rollback -Destination $script:UI -Force;if($previous){Write-Json $script:Receipt $previous}elseif(Test-Path -LiteralPath $script:Receipt){Remove-Item -LiteralPath $script:Receipt};throw}
   return Get-EnhancerStatus
@@ -172,10 +186,10 @@ function Disable-UpdateProtection {
 }
 function Get-EnhancerStatus {
   $receipt=Read-Json $script:Receipt;$protection=Read-Json $script:Protection
-  $version=if(Test-Path -LiteralPath $script:Exe){(Get-Item -LiteralPath $script:Exe).VersionInfo.FileVersion}else{'Not installed'}
+  $version=if(Test-Path -LiteralPath $script:Exe){(Get-SpotifyVersion $script:Exe)}else{'Not installed'}
   $patched=$false;if($receipt-and(Test-Path -LiteralPath $script:UI)){$patched=(FileHash $script:UI)-eq $receipt.patchedSha256}
   $blocks=@();if($protection){foreach($entry in $protection.paths){$valid=(Test-Path -LiteralPath $entry.path -PathType Leaf)-and([IO.File]::ReadAllText($entry.path)-eq $script:BlockMarker);$blocks+=@{path=$entry.path;active=$valid}}}
-  return [ordered]@{spotifyVersion=$version;supported=($version-eq $script:Builds.spotifyVersion);enhancerVersion=if($receipt){$receipt.enhancerVersion}else{$null};patched=$patched;updatesPinned=[bool]($protection-and $protection.enabled);stagingLocksIntact=[bool]($protection-and $protection.enabled-and @($blocks|Where-Object{-not $_.active}).Count-eq 0);blocks=$blocks;dataRoot=$script:DataRoot}
+  return [ordered]@{spotifyRoot=$script:SpotifyRoot;spotifyVersion=$version;supported=($version-eq $script:Builds.spotifyVersion);enhancerVersion=if($receipt){$receipt.enhancerVersion}else{$null};patched=$patched;updatesPinned=[bool]($protection-and $protection.enabled);stagingLocksIntact=[bool]($protection-and $protection.enabled-and @($blocks|Where-Object{-not $_.active}).Count-eq 0);blocks=$blocks;dataRoot=$script:DataRoot}
 }
 function Start-ProtectedSpotify {
   param([int]$DebugPort=0)
@@ -199,4 +213,4 @@ function Remove-Enhancer {
     Copy-Item -LiteralPath $receipt.originalBackup -Destination $script:UI -Force
   }
 }
-Export-ModuleMember -Function Initialize-Enhancer,Install-Enhancer,Get-EnhancerStatus,Enable-UpdateProtection,Disable-UpdateProtection,Start-ProtectedSpotify,Remove-Enhancer,Stop-Spotify,Test-SpotifyContent
+Export-ModuleMember -Function Assert-Supported,Initialize-Enhancer,Install-Enhancer,Get-EnhancerStatus,Enable-UpdateProtection,Disable-UpdateProtection,Start-ProtectedSpotify,Remove-Enhancer,Stop-Spotify,Test-SpotifyContent

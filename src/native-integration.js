@@ -245,6 +245,6 @@
   }
   document.addEventListener('keydown',event=>{if(event.target?.matches('input,textarea,select,[contenteditable=true]'))return;if(event.key==='Escape'&&!popover.hidden){close();return;}if(!event.altKey||!event.shiftKey||event.ctrlKey||event.metaKey)return;switch(event.key.toLowerCase()){case'l':navigate('/lyrics');break;case'b':addBookmark();break;case't':popover.hidden?open():close();break;case'arrowleft':seek(progress()-10000).catch(e=>say(e.message));break;case'arrowright':seek(progress()+10000).catch(e=>say(e.message));break;default:return;}event.preventDefault();});
   window.addEventListener('storage',e=>{if(e.key===KEY){try{state=e.newValue?Core.validateState(JSON.parse(e.newValue)):Core.emptyState();notify();appearance();}catch{}}});
-  window.SpotifyNativeEnhancer={version:'0.3.0',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),getStatus:()=>({version:'0.3.0',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
+  window.SpotifyNativeEnhancer={version:'0.3.1',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),getStatus:()=>({version:'0.3.1',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
   setInterval(tick,200);
 })();

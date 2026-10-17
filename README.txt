@@ -1,8 +1,9 @@
-MYIFY 0.3.0 - WINDOWS
+MYIFY 0.3.1 - WINDOWS
 
-Run Myify-Setup-0.3.0.exe. It updates the enhancement in your existing
+Run Myify-Setup-0.3.1.exe. It updates the enhancement in your existing
 Spotify app, creates a manager and protected launcher in the Start menu, and
-backs up the original Spotify resources. Spotify closes during installation.
+backs up the original Spotify resources. Select the folder containing Spotify.exe and Apps\xpui.spa.
+Common standalone locations are detected. Spotify closes during installation.
 The installer currently supports desktop Spotify 1.3.5.3058 only.
 
 PLAYBACK TOOLS

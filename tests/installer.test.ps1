@@ -5,7 +5,7 @@ param(
 $ErrorActionPreference='Stop'
 $project=Split-Path -Parent $PSScriptRoot
 $lab=Join-Path $project ('.test-lab\installer-lab-'+[Guid]::NewGuid().ToString('N'))
-$spotify=Join-Path $lab 'Spotify';$local=Join-Path $lab 'LocalSpotify';$data=Join-Path $lab 'ManagerData'
+$spotify=Join-Path $lab 'Another user\Spotify custom';$local=Join-Path $lab 'LocalSpotify';$data=Join-Path $lab 'ManagerData'
 New-Item -ItemType Directory -Path (Join-Path $spotify 'Apps'),$local -Force|Out-Null
 Copy-Item -LiteralPath $SpotifyExe -Destination $spotify
 $pristine=$OriginalArchive
@@ -41,6 +41,31 @@ try{
 }finally{$zip.Dispose()}
 $legacy=Install-Enhancer -SkipShortcuts
 Check $legacy.patched 'Existing v0.2 enhancement is migrated to the new manager'
+Initialize-Enhancer -DataRoot $data -LocalSpotifyRoot $local
+Check ((Get-EnhancerStatus).spotifyRoot -eq $spotify) 'Manager rediscovers a custom install from the saved receipt'
+$beforeDiscovery=(Get-FileHash (Join-Path $spotify 'Apps\xpui.spa')).Hash
+Initialize-Enhancer -SpotifyRoot (Join-Path $lab 'missing Spotify') -DataRoot $data -LocalSpotifyRoot $local
+$missingRejected=$false;try{Assert-Supported|Out-Null}catch{$missingRejected=$_.Exception.Message -like '*was not found*'}
+Check $missingRejected 'Explicit missing folders report missing executable rather than wrong version or silently falling back'
+Check ((Get-FileHash (Join-Path $spotify 'Apps\xpui.spa')).Hash -eq $beforeDiscovery) 'Failed discovery leaves the existing installation unchanged'
+$oldRoaming=$env:APPDATA;$oldLocal=$env:LOCALAPPDATA
+try{
+  $env:APPDATA=Join-Path $lab 'Fresh user\Roaming';$env:LOCALAPPDATA=Join-Path $lab 'Fresh user\Local'
+  $freshSpotify=Join-Path $env:LOCALAPPDATA 'Programs\Spotify'
+  New-Item -ItemType Directory -Path (Join-Path $freshSpotify 'Apps') -Force|Out-Null
+  Copy-Item -LiteralPath $SpotifyExe -Destination (Join-Path $freshSpotify 'Spotify.exe')
+  Copy-Item -LiteralPath $pristine -Destination (Join-Path $freshSpotify 'Apps\xpui.spa')
+  Initialize-Enhancer -DataRoot (Join-Path $lab 'Fresh data')
+  Check ((Get-EnhancerStatus).spotifyRoot -eq $freshSpotify) 'A different user profile discovers a standalone Programs install without original machine paths'
+  Check ((Assert-Supported) -eq '1.3.5.3058') 'Supported executable is checked using its four numeric version fields'
+  $freshResult=Install-Enhancer -SkipShortcuts
+  Check $freshResult.patched 'A fresh different user profile installs successfully using only its own original resources'
+  Remove-Enhancer
+  Check (Test-SpotifyContent (Join-Path $freshSpotify 'Apps\xpui.spa')) 'Fresh-profile uninstall restores original resources'
+
+}finally{$env:APPDATA=$oldRoaming;$env:LOCALAPPDATA=$oldLocal}
+Initialize-Enhancer -SpotifyRoot $spotify -DataRoot $data -LocalSpotifyRoot $local
+
 $zip=[IO.Compression.ZipFile]::Open((Join-Path $spotify 'Apps\xpui.spa'),[IO.Compression.ZipArchiveMode]::Update)
 try{$entry=$zip.CreateEntry('unknown-mod.js');$writer=[IO.StreamWriter]::new($entry.Open());try{$writer.Write('/* unknown */')}finally{$writer.Dispose()}}finally{$zip.Dispose()}
 $beforeTamper=(Get-FileHash (Join-Path $spotify 'Apps\xpui.spa')).Hash;$rejected=$false;try{Install-Enhancer -SkipShortcuts|Out-Null}catch{$rejected=$true}

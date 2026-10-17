@@ -11,7 +11,7 @@ npm run build
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Installer.ps1
 ```
 
-Pass `-InnoCompiler "C:\path\to\ISCC.exe"` if the compiler is not on PATH or in its normal location. Outputs are `dist/native-loader.js`, `dist/Myify-Setup-0.3.0.exe` and `dist/SHA256SUMS`. Generated payloads and binary outputs are ignored by Git. There are no npm dependencies to install.
+Pass `-InnoCompiler "C:\path\to\ISCC.exe"` if the compiler is not on PATH or in its normal location. Outputs are `dist/native-loader.js`, `dist/Myify-Setup-0.3.1.exe` and `dist/SHA256SUMS`. Generated payloads and binary outputs are ignored by Git. There are no npm dependencies to install.
 
 ## Architecture
 
@@ -47,5 +47,7 @@ Before the Myify rename, the same transport implementation was tested inside act
 4. Smoke-test install, repair, launch and uninstall on a supported test installation. Never claim a newer build works from a version-string edit alone.
 5. Create a tagged GitHub release and upload the EXE and SHA256SUMS as actual assets. Source archives are supplied automatically by GitHub.
 6. Compare the uploaded installer hash with SHA256SUMS. The installer is currently unsigned; the checksum verifies downloaded bytes against the release, not an independently authenticated publisher.
+
+The manager supports `-Action Check -SpotifyRoot "C:\path\to\Spotify"` for a read-only compatibility check. Setup accepts `/SPOTIFYDIR="..."` and uses the same engine validation as the manager.
 
 The Inno compiler embeds build metadata, so binary-identical rebuilds are not promised. Source is MIT licensed; Spotify's binaries/assets are not distributable as part of this project.
