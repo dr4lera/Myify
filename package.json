@@ -1,13 +1,13 @@
 {
   "name": "myify",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "description": "Spotify local themes and lyrics tool",
   "license": "MIT",
   "scripts": {
     "build": "node scripts/build.cjs",
     "test": "node --test tests/*.test.cjs",
-    "check": "node --check src/core.js && node --check src/native-integration.js && node --check src/features.js && node --check src/theme-editor.js"
+    "check": "node --check src/core.js && node --check src/native-integration.js && node --check src/features.js && node --check src/theme-editor.js && node --check src/backgrounds.js"
   },
   "repository": {
     "type": "git",

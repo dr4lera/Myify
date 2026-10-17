@@ -30,7 +30,11 @@ The sleep controls offer a normal timer, **Stop after song**, and **Fade timer**
 
 Settings → Myify → **Theme editor** now combines the preset selector, name, color swatches and editable hex values, app font, lyric text size, background images, and a live preview. Edits apply immediately. Choosing a preset, importing, or loading a saved theme refreshes every control together. **Save theme** stores the complete active appearance; **Export theme** includes the font and embedded background. **Spotify default** restores the default appearance.
 
-Backgrounds can be local PNG/JPEG/WebP images under 1 MB. Theme JSON imports accept files up to 2 MB, including themes with embedded images; the previous 64 KB import limit rejected larger image themes. Existing v1 theme files and saved themes remain compatible.
+Backgrounds accept local **PNG, JPG/JPEG, animated GIF and WebP** files. The picker lists those extensions explicitly, and Myify identifies the image from its contents even when Windows provides no MIME type. Static images up to 32 MB are accepted; larger images are resized to a maximum dimension of 1920 pixels and compressed for storage. Animated GIFs up to 8 MB retain their original animation. The selected image appears in a thumbnail and the live preview.
+
+App fonts now apply to playlist titles, track rows, navigation and other interface text. **Upload custom font** accepts TTF, OTF, WOFF and WOFF2 files up to 16 MB. Uploaded fonts become selectable and are saved with themes. Use fonts you have permission to share when distributing a theme. Spotify default restores its normal fonts.
+
+Images and custom fonts are stored in local IndexedDB rather than filling the smaller settings storage. **Export theme** embeds the selected assets so another user can import them. Theme JSON imports accept files up to 40 MB; full settings backups include referenced image/font assets and accept files up to 128 MB. Existing v1 themes remain compatible. Keep an exported backup before clearing Spotify browser data.
 
 Under **Keyboard shortcuts**, select an action's field and press the desired modifier combination. Backspace clears a binding. Duplicate assignments are rejected; **Reset shortcuts** restores defaults. These are focused-Spotify shortcuts, not system-wide hotkeys. Bindings, loops, fonts and embedded backgrounds are included in backups.
 

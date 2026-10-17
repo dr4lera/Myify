@@ -1,6 +1,6 @@
-MYIFY 0.4.1 - COMBINED WINDOWS TOOLS
+MYIFY 0.4.2 - COMBINED WINDOWS TOOLS
 
-Run Myify-Setup-0.4.1.exe over your existing Myify installation. Spotify closes
+Run Myify-Setup-0.4.2.exe over your existing Myify installation. Spotify closes
 while setup updates the tools. The install identity, original Spotify resource
 backup and saved lyrics/themes/bookmarks are preserved. Launch Spotify (Myify).
 Standalone desktop Spotify 1.3.5.3058 is required; unknown builds are refused.
@@ -16,9 +16,13 @@ The sliders button beside lyrics opens Myify playback tools:
 - Sleep modes include a timer, end of current song, and a final 30-second fade.
 
 Spotify Settings > Myify includes live colors, saved themes, background images,
-fonts, editable keyboard bindings with conflict checks, settings backup/restore,
+uploaded TTF/OTF/WOFF/WOFF2 fonts, editable keyboard bindings with conflict checks, settings backup/restore,
 version compatibility, saved loops and bookmarks. Shortcuts work with Spotify
 focused. Backspace clears a binding; Reset shortcuts restores defaults.
+Fonts apply to playlist and navigation text. Backgrounds accept JPG/JPEG, PNG,
+WebP and animated GIFs. Images up to 32 MB are resized when needed; GIFs keep
+animation and must be under 8 MB. Font uploads allow up to 16 MB. Theme exports
+and full settings backups include the uploaded images and fonts.
 
 Start menu > Myify > Myify desktop tools provides advanced generation options,
 batch files, base.en/small.en models, editable results and local library tools.

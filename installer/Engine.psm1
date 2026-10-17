@@ -117,7 +117,7 @@ function Install-Enhancer {
   try{
     Copy-Item -LiteralPath $patch -Destination $script:UI -Force
     if((FileHash $script:UI)-ne(FileHash $patch)){throw 'Installed archive failed verification.'}
-    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.4.1';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
+    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.4.2';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
     if($ProtectUpdates){Enable-UpdateProtection -SkipShortcuts:$SkipShortcuts}
   }catch{Copy-Item -LiteralPath $rollback -Destination $script:UI -Force;if($previous){Write-Json $script:Receipt $previous}elseif(Test-Path -LiteralPath $script:Receipt){Remove-Item -LiteralPath $script:Receipt};throw}
   return Get-EnhancerStatus

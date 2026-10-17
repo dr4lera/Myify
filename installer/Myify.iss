@@ -1,4 +1,4 @@
-#define AppVersion "0.4.1"
+#define AppVersion "0.4.2"
 [Setup]
 AppId={{1C840779-AD93-40D8-9679-EA7560E26881}
 AppName=Myify

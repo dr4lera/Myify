@@ -4,7 +4,7 @@
   const VERSION = 1, KEY = 'local-enhancer:v1';
   const MAX_FILE = 512 * 1024;
   const validUri = value => typeof value === 'string' && /^spotify:(local|track|episode|chapter|playlist):[^\s]+$/.test(value);
-  const defaultTheme = () => ({name:'My theme',background:'#121212',panel:'#181818',text:'#ffffff',muted:'#b3b3b3',accent:'#1ed760',lyricsBackground:'#1e5a3c',lyricsText:'#ffffff',fontFamily:'System',backgroundImage:''});
+  const defaultTheme = () => ({name:'My theme',background:'#121212',panel:'#181818',text:'#ffffff',muted:'#b3b3b3',accent:'#1ed760',lyricsBackground:'#1e5a3c',lyricsText:'#ffffff',fontFamily:'System',fontName:'',backgroundImage:''});
   function validateTheme(value) {
     if(!value || typeof value !== 'object') throw Error('Invalid theme.');
     const theme=defaultTheme();theme.name=String(value.name||theme.name).slice(0,60);
@@ -12,8 +12,11 @@
       if(typeof value[key] !== 'undefined' && !/^#[0-9a-f]{6}$/i.test(value[key]))throw Error('Theme colors must use #RRGGBB.');
       if(value[key])theme[key]=value[key].toLowerCase();
     }
-    theme.fontFamily=['System','Segoe UI','Arial','Georgia','Consolas'].includes(value.fontFamily)?value.fontFamily:'System';
-    theme.backgroundImage=typeof value.backgroundImage==='string'&&/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value.backgroundImage)&&value.backgroundImage.length<1500000?value.backgroundImage:'';
+    theme.fontFamily=['System','Segoe UI','Arial','Georgia','Consolas'].includes(value.fontFamily)||/^myify-font:[a-f0-9]{64}$/.test(value.fontFamily)?value.fontFamily:'System';
+    theme.fontName=theme.fontFamily.startsWith('myify-font:')?String(value.fontName||'Custom font').slice(0,100):'';
+    const image=value.backgroundImage||'';
+    if(typeof image!=='string'||(image&&!/^myify-image:[a-f0-9]{64}$/.test(image)&&(!/^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$/i.test(image)||image.length>12*1024*1024)))throw Error('Unsupported background image. Choose a PNG, JPG, GIF or WebP file.');
+    theme.backgroundImage=image.replace(/^data:image\/jpg;/i,'data:image/jpeg;');
     return theme;
   }
   function parseLrc(source) {

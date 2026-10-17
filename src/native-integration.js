@@ -5,6 +5,7 @@
   'use strict';
   if (window.SpotifyNativeEnhancer) return;
   const Core = window.LocalEnhancerCore, KEY = 'local-enhancer:v1';
+  const Backgrounds=window.MyifyBackgrounds;
   if (!Core) throw Error('Enhancer core was not loaded.');
   let state = Core.emptyState();
   try { const saved = localStorage.getItem(KEY); if (saved) state = Core.validateState(JSON.parse(saved)); } catch (e) { console.warn('Enhancer saved data could not load:', e.message); }
@@ -130,9 +131,10 @@
     const t=palette();
     themeStyle.textContent=state.settings.theme==='forest'?'':`html{--background-base:${t.background};--background-elevated-base:${t.panel};--background-highlight:${t.panel};--text-base:${t.text};--text-subdued:${t.muted};--essential-bright-accent:${t.accent};--text-bright-accent:${t.accent}}html main,html .main-view-container__scroll-node-child{background-color:${t.background}!important;color:${t.text}}html [data-testid="global-nav-bar"],html [data-testid="now-playing-bar"]{background-color:${t.panel}!important}html main [data-encore-id="text"],html .le-settings,html .le-popover{color:${t.text}}html .le-primary{background:${t.accent};color:#101010}html .le-popover,html .le-input{background-color:${t.panel};color:${t.text}}html .le-subtle,html .le-status,html .le-card p,html .le-popover p{color:${t.muted}}`;
     parsedCache.clear();
-    const font=t.fontFamily&&t.fontFamily!=='System'?JSON.stringify(t.fontFamily):'inherit';
-    if(t.fontFamily&&t.fontFamily!=='System')themeStyle.textContent+=`html{--encore-body-font-stack:${font};--encore-title-font-stack:${font}}html body,html main,html [data-encore-id="text"],html .le-popover,html .le-settings,html .le-editor{font-family:${font}!important}`;
-    if(t.backgroundImage)themeStyle.textContent+=`html main,html .main-view-container__scroll-node-child{background-image:linear-gradient(#0007,#0007),url("${t.backgroundImage}")!important;background-size:cover!important;background-attachment:fixed!important}`;
+    const font=JSON.stringify(Backgrounds.fontFamily(t.fontFamily)||'Segoe UI')+',"Segoe UI Emoji",sans-serif';
+    if(t.fontFamily&&t.fontFamily!=='System')themeStyle.textContent+=`html{--encore-body-font-stack:${font};--encore-title-font-stack:${font}}html body,html body :is(main,button,input,textarea,select,a,p,span,strong,b,em,h1,h2,h3,h4,h5,h6,label,div,td,th,li){font-family:${font}!important}`;
+    const backgroundUrl=Backgrounds.getUrl(t.backgroundImage);
+    if(backgroundUrl)themeStyle.textContent+=`html main,html .main-view-container__scroll-node-child{background-image:linear-gradient(#0007,#0007),url("${backgroundUrl}")!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important}`;
   }
   const fileInput = el('input'); fileInput.id='spotify-native-enhancer-lrc-file'; fileInput.type = 'file'; fileInput.accept = '.lrc'; fileInput.hidden = true;
   fileInput.onchange = async () => {
@@ -189,7 +191,7 @@
     extraSettings(section,intro,card);
     const backup = card('Backup & restore'); backup.append(el('p', 'Backups include lyric attachments, saved loops, bookmarks, themes and keyboard bindings. Desktop library mappings are included while desktop tools are connected. Music files and model weights are not copied.'));
     const backupRow = el('div', undefined, 'le-row'); const restore = el('input'); restore.type = 'file'; restore.accept = '.json'; restore.hidden = true;
-    restore.onchange = async () => { const f = restore.files[0]; restore.value = ''; if (!f) return; try { if (f.size > 32*1024*1024) throw Error('Backup must be under 32 MB.'); const raw=JSON.parse(await f.text()),other = Core.validateState(raw); const bookmarks = new Map(state.bookmarks.map(b=>[b.id,b])); other.bookmarks.forEach(b=>bookmarks.set(b.id,b)); if (bookmarks.size > 2000) throw Error('Too many bookmarks.'); if (save({ ...state, tracks: { ...state.tracks, ...other.tracks }, bookmarks: [...bookmarks.values()], settings: other.settings })) { appearance();if(raw.desktopLibrary){try{await desktopRequest('/restore',raw.desktopLibrary);}catch{say('Settings restored. Launch desktop tools and import again to restore local file mappings.');return;}}say('Backup imported.');section.remove();settings(); } } catch (e) { say(e.message); } };
+    restore.onchange = async () => { const f = restore.files[0]; restore.value = ''; if (!f) return; try { if (f.size > 128*1024*1024) throw Error('Backup must be under 128 MB.'); const raw=JSON.parse(await f.text()),other = Core.validateState(raw); await Backgrounds.importAssets(raw.backgroundAssets||[]); const bookmarks = new Map(state.bookmarks.map(b=>[b.id,b])); other.bookmarks.forEach(b=>bookmarks.set(b.id,b)); if (bookmarks.size > 2000) throw Error('Too many bookmarks.'); if (save({ ...state, tracks: { ...state.tracks, ...other.tracks }, bookmarks: [...bookmarks.values()], settings: other.settings })) { appearance();if(raw.desktopLibrary){try{await desktopRequest('/restore',raw.desktopLibrary);}catch{say('Settings restored. Launch desktop tools and import again to restore local file mappings.');return;}}say('Backup imported.');section.remove();settings(); } } catch (e) { say(e.message); } };
     backupRow.append(button('Export backup', exportBackup), button('Import backup', () => restore.click()), restore); backup.append(backupRow);
     const statusEl = el('p', status, 'le-status'); statusEl.dataset.leStatus = ''; statusEl.setAttribute('role','status'); section.append(statusEl);
     const content = main.querySelector('.contentSpacing') || main; content.append(section); renderLists();renderSavedLoops();
@@ -232,6 +234,7 @@
   }
   document.addEventListener('keydown',handleShortcut);
   window.addEventListener('storage',e=>{if(e.key===KEY){try{state=e.newValue?Core.validateState(JSON.parse(e.newValue)):Core.emptyState();notify();appearance();}catch{}}});
-  window.SpotifyNativeEnhancer={version:'0.4.1',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),openEditor,getStatus:()=>({version:'0.4.1',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,desktopConnected,compatibility,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
+  window.SpotifyNativeEnhancer={version:'0.4.2',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),openEditor,getStatus:()=>({version:'0.4.2',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,desktopConnected,compatibility,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
   setInterval(tick,200);
+  Backgrounds.subscribe(()=>{appearance();notify();});
 })();

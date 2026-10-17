@@ -25,20 +25,29 @@
     controls.append(el('h3','Typography'));
     const font=el('select',undefined,'le-input');font.id='enhancer-theme-font';font.setAttribute('aria-label','App font');
     for(const value of ['System','Segoe UI','Arial','Georgia','Consolas']){const option=el('option',value==='System'?'Spotify default font':value);option.value=value;font.append(option);}
-    font.onchange=()=>update({fontFamily:font.value});row(controls,'App font',font);
+    const uploadedFonts=new Map();
+    font.onchange=()=>update({fontFamily:font.value,fontName:uploadedFonts.get(font.value)||''});row(controls,'App font',font);
+    const fontInput=el('input');fontInput.type='file';fontInput.accept='.ttf,.otf,.woff,.woff2';fontInput.hidden=true;fontInput.id='enhancer-custom-font';
+    const fontStatus=el('p','Upload TTF, OTF, WOFF or WOFF2 · up to 16 MB','le-subtle');fontStatus.setAttribute('role','status');
+    function addFont(id,label){uploadedFonts.set(id,label);if(![...font.options].some(option=>option.value===id)){const option=el('option',label||'Custom font');option.value=id;font.append(option);}}
+    fontInput.onchange=async()=>{const file=fontInput.files[0];fontInput.value='';if(!file)return;fontStatus.textContent='Loading font…';try{const id=await Backgrounds.storeFont(file,file.name);addFont(id,file.name);update({fontFamily:id,fontName:file.name});say('Custom font applied across Spotify.');}catch(error){fontStatus.textContent=error.message;say(error.message);}};
+    controls.append(button('Upload custom font',()=>fontInput.click()),fontInput,fontStatus);
+    Backgrounds.listFonts().then(fonts=>{if(!container.isConnected)return;fonts.forEach(item=>addFont(item.id,item.name));refresh();}).catch(error=>{fontStatus.textContent=error.message;});
     const size=el('input');size.type='range';size.min='18';size.max='48';size.id='enhancer-lyric-size';size.setAttribute('aria-label','Lyric text size');
     const sizeLabel=el('span');size.oninput=()=>{if(save({...state,settings:{...state.settings,fontSize:Number(size.value)}})){appearance();refresh();}};
     const sizeRow=el('div',undefined,'le-row');sizeRow.append(size,sizeLabel);row(controls,'Lyric text size',sizeRow);
     controls.append(el('h3','Background image'));
-    const imageInput=el('input');imageInput.type='file';imageInput.accept='image/png,image/jpeg,image/webp';imageInput.hidden=true;imageInput.id='enhancer-background-file';
+    const imageInput=el('input');imageInput.type='file';imageInput.accept='.png,.jpg,.jpeg,.gif,.webp';imageInput.hidden=true;imageInput.id='enhancer-background-file';
     const imageStatus=el('p',undefined,'le-subtle');imageStatus.id='enhancer-background-status';
-    imageInput.onchange=()=>{
+    imageStatus.setAttribute('role','status');
+    const imageThumbnail=el('img');imageThumbnail.alt='Selected background';imageThumbnail.hidden=true;imageThumbnail.style.cssText='display:block;width:100%;max-height:180px;object-fit:contain;border-radius:8px;margin-top:12px';
+    imageInput.onchange=async()=>{
       const file=imageInput.files[0];imageInput.value='';if(!file)return;
-      if(file.size>1000000||!['image/png','image/jpeg','image/webp'].includes(file.type))return say('Choose a PNG, JPEG or WebP image under 1 MB.');
-      const reader=new FileReader();reader.onload=()=>{try{update({backgroundImage:reader.result});say('Background image applied. Save theme to keep it as a preset.');}catch(e){say(e.message);}};reader.onerror=()=>say('Could not read that image.');reader.readAsDataURL(file);
+      imageStatus.textContent='Preparing background…';
+      try{const reference=await Backgrounds.store(file,file.name);update({backgroundImage:reference});say('Background applied. Animated GIFs keep their animation.');}catch(e){imageStatus.textContent=e.message;say(e.message);}
     };
     const removeImage=button('Remove image',()=>update({backgroundImage:''})),imageButtons=el('div',undefined,'le-row');
-    imageButtons.append(button('Choose image',()=>imageInput.click()),removeImage,imageInput);controls.append(imageButtons,imageStatus);
+    imageButtons.append(button('Choose image / GIF',()=>imageInput.click()),removeImage,imageInput);controls.append(imageButtons,imageStatus,imageThumbnail);
     const previewTitle=el('div','Live preview','le-theme-preview-caption'),sample=el('div',undefined,'le-theme-sample');
     const sampleHeader=el('div',undefined,'le-theme-sample-header'),sampleName=el('strong','Your song'),sampleArtist=el('p','Local music');
     const sampleButton=button('Play',()=>{});sampleButton.tabIndex=-1;sampleButton.setAttribute('aria-hidden','true');
@@ -50,16 +59,16 @@
     saved.onchange=()=>{if(saved.value==='')return;const customTheme=Core.validateTheme(state.settings.savedThemes[Number(saved.value)]);if(save({...state,settings:{...state.settings,theme:'custom',customTheme}})){appearance();refresh();say('Saved theme loaded.');}};
     const themeFile=el('input');themeFile.type='file';themeFile.accept='.json';themeFile.id='enhancer-theme-file';themeFile.hidden=true;
     themeFile.onchange=async()=>{const file=themeFile.files[0];themeFile.value='';if(!file)return;try{
-      if(file.size>2*1024*1024)throw Error('Theme files must be under 2 MB.');
+      if(file.size>40*1024*1024)throw Error('Theme files must be under 40 MB.');
       const data=JSON.parse(await file.text());if(data.type!=='spotify-native-enhancer-theme'||data.version!==1)throw Error('Choose a Myify theme JSON file.');
-      const customTheme=Core.validateTheme(data.theme),savedThemes=[...state.settings.savedThemes.filter(t=>t.name!==customTheme.name),customTheme].slice(-30);
+      const customTheme=await Backgrounds.importTheme(data.theme),savedThemes=[...state.settings.savedThemes.filter(t=>t.name!==customTheme.name),customTheme].slice(-30);
       if(save({...state,settings:{...state.settings,theme:'custom',customTheme,savedThemes}})){appearance();refresh();say('Complete theme imported, including font and background.');}
     }catch(e){say(e.message);}};
     const buttons=el('div',undefined,'le-row le-theme-buttons');
     buttons.append(button('Save theme',()=>{
       const customTheme=Core.validateTheme({...palette(),name:name.value.trim()||'My theme'}),savedThemes=[...state.settings.savedThemes.filter(t=>t.name!==customTheme.name),customTheme].slice(-30);
       if(save({...state,settings:{...state.settings,theme:'custom',customTheme,savedThemes}})){appearance();refresh();say('Theme saved with colors, font and background.');}
-    },true),button('Export theme',()=>download('myify-theme.json',JSON.stringify({type:'spotify-native-enhancer-theme',version:1,theme:Core.validateTheme({...palette(),name:name.value.trim()||palette().name})},null,2))),button('Import theme',()=>themeFile.click()),themeFile);
+    },true),button('Export theme',async()=>download('myify-theme.json',JSON.stringify({type:'spotify-native-enhancer-theme',version:1,theme:await Backgrounds.portableTheme(Core.validateTheme({...palette(),name:name.value.trim()||palette().name}))},null,2))),button('Import theme',()=>themeFile.click()),themeFile);
     const savedRow=el('div',undefined,'le-theme-saved');savedRow.append(el('label','Saved themes'),saved);
     container.append(note,top,layout,buttons,savedRow);
     mode.onchange=()=>{if(save({...state,settings:{...state.settings,theme:mode.value}})){appearance();refresh();}};
@@ -68,12 +77,16 @@
       const theme=palette(),focused=document.activeElement;
       mode.value=state.settings.theme;if(focused!==name)name.value=theme.name;
       for(const [key,{picker,hex}]of Object.entries(colorControls)){picker.value=theme[key];if(focused!==hex)hex.value=theme[key];}
+      if(theme.fontFamily?.startsWith('myify-font:'))addFont(theme.fontFamily,theme.fontName||'Custom font');
       font.value=theme.fontFamily||'System';size.value=state.settings.fontSize;sizeLabel.textContent=state.settings.fontSize+' px';
-      imageStatus.textContent=theme.backgroundImage?'Image attached · included in saved themes and exports':'No image · PNG, JPEG or WebP under 1 MB';removeImage.disabled=!theme.backgroundImage;
+      fontStatus.textContent=Backgrounds.error(theme.fontFamily)||(theme.fontName?theme.fontName+' · included in theme exports':'Upload TTF, OTF, WOFF or WOFF2 · up to 16 MB');
+      const imageUrl=Backgrounds.getUrl(theme.backgroundImage);
+      imageStatus.textContent=Backgrounds.error(theme.backgroundImage)||(theme.backgroundImage?'Background attached · included in theme exports':'PNG, JPG/JPEG, GIF or WebP · images up to 32 MB; GIFs up to 8 MB');removeImage.disabled=!theme.backgroundImage;
+      imageThumbnail.hidden=!imageUrl;imageThumbnail.style.display=imageUrl?'block':'none';if(imageUrl&&imageThumbnail.src!==imageUrl)imageThumbnail.src=imageUrl;if(!imageUrl)imageThumbnail.removeAttribute('src');
       const previous=saved.value;saved.replaceChildren();const placeholder=el('option','Choose a saved theme');placeholder.value='';saved.append(placeholder);
       state.settings.savedThemes.forEach((theme,index)=>{const option=el('option',theme.name);option.value=String(index);saved.append(option);});if([...saved.options].some(option=>option.value===previous))saved.value=previous;
-      sample.style.backgroundColor=theme.background;sample.style.color=theme.text;sample.style.fontFamily=theme.fontFamily==='System'?'inherit':theme.fontFamily;
-      sample.style.backgroundImage=theme.backgroundImage?`linear-gradient(#0005,#0005),url("${theme.backgroundImage}")`:'none';
+      sample.style.backgroundColor=theme.background;sample.style.color=theme.text;sample.style.fontFamily=Backgrounds.fontFamily(theme.fontFamily);
+      sample.style.backgroundImage=imageUrl?`linear-gradient(#0005,#0005),url("${imageUrl}")`:'none';
       sampleHeader.style.backgroundColor=theme.panel;sampleArtist.style.color=theme.muted;sampleButton.style.backgroundColor=theme.accent;sampleButton.style.color='#101010';
       lyricBox.style.backgroundColor=theme.lyricsBackground;active.style.color=theme.lyricsText;active.style.fontSize=Math.min(32,state.settings.fontSize)+'px';mutedLine.style.color=theme.lyricsText;mutedLine.style.opacity='.5';nextLine.style.color=theme.lyricsText;nextLine.style.opacity='.5';
     }
