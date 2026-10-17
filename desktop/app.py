@@ -37,7 +37,12 @@ class App:
         self.stop = threading.Event()
         self.busy = False
         self.closed = False
-        self.bridge = Bridge(config['token'], self.events, self.library_api, self.compatibility)
+        self.shadow_path = self.data / 'renderer-state.json'
+        self.shadow = None
+        if self.shadow_path.exists():
+            try: self.shadow = json.loads(self.shadow_path.read_text(encoding='utf-8'))
+            except (OSError, ValueError): pass
+        self.bridge = Bridge(config['token'], self.events, self.library_api, self.compatibility, self.renderer_state)
         self.bridge.status = 'Ready. Generate lyrics uses the included local English model.'
         self.server = serve(self.bridge, config['port'])
         root.title('Myify')
@@ -124,6 +129,24 @@ class App:
             pass
         self._compat_cache = (time.monotonic(), result)
         return result
+
+    def renderer_state(self, value):
+        """Keep a timestamped recovery copy outside Chromium's delayed storage."""
+        if value is None:
+            return None
+        if not isinstance(value, dict) or value.get('version') != 1 or not isinstance(value.get('tracks'), dict) or not isinstance(value.get('bookmarks'), list):
+            raise ValueError('Invalid Myify state snapshot.')
+        stamp = value.get('modifiedAt', 0)
+        if not isinstance(stamp, (int, float)) or not math.isfinite(stamp) or stamp < 0:
+            raise ValueError('Invalid Myify snapshot timestamp.')
+        if self.shadow and self.shadow.get('modifiedAt', 0) > stamp:
+            return self.shadow
+        if self.shadow != value:
+            temporary = self.shadow_path.with_suffix('.new')
+            temporary.write_text(json.dumps(value, ensure_ascii=False), encoding='utf-8')
+            temporary.replace(self.shadow_path)
+            self.shadow = value
+        return None
 
     def send(self, action, **values):
         try:

@@ -15,7 +15,7 @@
   const record = uri => playable(uri) && state.tracks[uri]?.raw ? state.tracks[uri] : null;
   function palette(){const t=Core.defaultTheme();if(state.settings.theme==='midnight')return{...t,name:'Midnight blue',background:'#101a2b',panel:'#1a2940',accent:'#a6c8ff',lyricsBackground:'#1a2940'};if(state.settings.theme==='plum')return{...t,name:'Plum',background:'#231625',panel:'#35203b',accent:'#f1b1eb',lyricsBackground:'#35203b'};return state.settings.theme==='custom'?state.settings.customTheme:t;}
   function notify() { revision++; listeners.forEach(fn => fn()); lastRender = ''; }
-  function save(next) { try { localStorage.setItem(KEY, JSON.stringify(next)); state = next; notify(); return true; } catch { say('Storage is full. Export a backup before removing unused lyrics.'); return false; } }
+  function save(next) { try { next.modifiedAt=Date.now();localStorage.setItem(KEY, JSON.stringify(next)); state = next; notify();bridgeLast=0;syncDesktop();return true; } catch { say('Storage is full. Export a backup before removing unused lyrics.'); return false; } }
   function say(text) { status = text; document.querySelectorAll('[data-le-status]').forEach(e => { e.textContent = text; }); }
   const subscribe = fn => { listeners.add(fn); return () => listeners.delete(fn); };
   const snapshot = () => revision;

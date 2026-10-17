@@ -48,6 +48,8 @@ Export/import in Spotify's Myify Settings covers lyrics, offsets, song mappings,
 
 The local bridge binds only to `127.0.0.1`, uses a randomly assigned port, checks the Spotify renderer origin and Host header, and requires an installation-specific random secret. It exchanges playback summaries and Myify commands; it does not read Spotify account tokens or cookies. No firewall exceptions or system-wide keyboard hooks are installed. Bridge requests are not an interface to arbitrary shell commands.
 
+Desktop tools keep a timestamped `renderer-state.json` recovery copy in the Myify data folder. If Spotify reopens with an older browser-storage snapshot after closing during an upgrade, Myify restores the newer recovery copy. Newer intentional changes, including deleting an attachment, replace the recovery copy. Treat this file as private: it contains your Myify lyric attachments and preferences.
+
 ## Source builds and licensing
 
 Renderer/installer code remains MIT. The integrated desktop component is GPL-2.0-or-later because it bundles Mutagen; its full source is in `desktop/`, with the license and upstream source information. Third-party runtime and model licenses remain separate.

@@ -12,6 +12,7 @@ test('Old backups migrate with default bindings while keeping lyrics and bookmar
   const old={version:1,tracks:{'spotify:local:A:B:C:120':{title:'Song',raw:'[00:01.00]Hi',offset:-100}},bookmarks:[{id:'old',uri:'spotify:track:a',ms:1000,note:'Saved'}],settings:{theme:'plum',fontSize:32}};
   const migrated=validateState(old);assert.deepEqual(migrated.settings.bindings,defaultBindings());assert.equal(migrated.tracks['spotify:local:A:B:C:120'].raw,old.tracks['spotify:local:A:B:C:120'].raw);assert.equal(migrated.bookmarks[0].note,'Saved');
 });
+test('Recovery timestamps survive validation without being added to legacy backups',()=>{const s=emptyState();assert.equal('modifiedAt' in validateState(s),false);assert.equal(validateState({...s,modifiedAt:12345}).modifiedAt,12345);});
 test('Bindings can change and clear, but conflicts and invalid combinations are rejected',()=>{
   const b=validateBindings({...defaultBindings(),lyrics:'Ctrl+Shift+K',stamp:''});assert.equal(b.lyrics,'Ctrl+Shift+K');assert.equal(b.stamp,'');
   assert.throws(()=>validateBindings({...defaultBindings(),lyrics:defaultBindings().bookmark}),/share/);

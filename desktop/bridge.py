@@ -10,9 +10,10 @@ ORIGINS = {'https://xpui.app.spotify.com', 'https://xpui.spotify.com'}
 
 
 class Bridge:
-    def __init__(self, token, dispatch, library, compatibility):
+    def __init__(self, token, dispatch, library, compatibility, state_store=lambda value: None):
         self.token, self.dispatch = token, dispatch
         self.library, self.compatibility = library, compatibility
+        self.state_store = state_store
         self.snapshot = {}
         self.commands = []
         self.lock = threading.Lock()
@@ -33,7 +34,7 @@ class Bridge:
             self.snapshot = {key: data.get(key) for key in ('uri', 'title', 'artist', 'position', 'duration', 'paused', 'line', 'volume')}
             self.last_seen = time.monotonic()
             self.commands = [command for command in self.commands if command['id'] not in acks]
-            return {'commands': list(self.commands), 'status': self.status, 'compatibility': self.compatibility()}
+            return {'commands': list(self.commands), 'status': self.status, 'compatibility': self.compatibility(), 'restore': self.state_store(data.get('state'))}
 
 
 def serve(bridge, port):
@@ -72,7 +73,7 @@ def serve(bridge, port):
                 return self.reply(403, {'error': 'Authorization rejected'})
             try:
                 length = int(self.headers.get('Content-Length', '0'))
-                if length < 2 or length > 2 * 1024 * 1024:
+                if length < 2 or length > 32 * 1024 * 1024:
                     raise ValueError('Request is too large or empty.')
                 data = json.loads(self.rfile.read(length))
                 if self.path == '/sync':
@@ -87,6 +88,9 @@ def serve(bridge, port):
                     result = bridge.library(None)
                 elif self.path == '/restore':
                     result = bridge.library(data)
+                elif self.path == '/prepare':
+                    bridge.send('shutdown')
+                    result = {'ok': True}
                 else:
                     return self.reply(404, {'error': 'Unknown endpoint'})
                 self.reply(200, result)

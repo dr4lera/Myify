@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from bridge import Bridge, serve
 import library
+from app import App
 
 
 class BridgeTest(unittest.TestCase):
@@ -45,9 +46,24 @@ class BridgeTest(unittest.TestCase):
         self.post('/open', {'action': 'generate', 'item': {'uri': 'spotify:local:a:b:c:10'}})
         self.assertEqual(self.events.get_nowait()[0], 'generate')
         with self.assertRaises(urllib.error.HTTPError): self.post('/open', {'action': 'shell'})
+        self.post('/prepare', {})
+        self.assertEqual(self.bridge.commands[-1]['action'], 'shutdown')
 
 
 class LibraryTest(unittest.TestCase):
+    def test_recovery_copy_survives_restart_and_rejects_stale_browser_state(self):
+        with tempfile.TemporaryDirectory() as folder:
+            app = App.__new__(App); app.shadow_path = Path(folder)/'state.json'; app.shadow=None
+            latest = dict(version=1, tracks={'spotify:local:a:b:c:10':{'raw':'[00:01.00]A'}}, bookmarks=[], settings={'theme':'plum'}, modifiedAt=200)
+            self.assertIsNone(app.renderer_state(latest))
+            restarted = App.__new__(App); restarted.shadow_path=app.shadow_path; restarted.shadow=json.loads(app.shadow_path.read_text())
+            older = {**latest, 'tracks':{}, 'modifiedAt':100}
+            self.assertEqual(restarted.renderer_state(older), latest)
+            self.assertEqual(json.loads(app.shadow_path.read_text()), latest)
+            removed = {**latest, 'tracks':{}, 'modifiedAt':300}
+            self.assertIsNone(restarted.renderer_state(removed))
+            self.assertEqual(json.loads(app.shadow_path.read_text())['tracks'], {})
+
     def test_auto_lookup_checks_duration_and_accepts_identical_copies(self):
         with tempfile.TemporaryDirectory() as folder:
             a, b = Path(folder)/'Song mix.mp3', Path(folder)/'copy'/'Song mix.mp3'

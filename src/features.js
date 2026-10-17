@@ -1,6 +1,6 @@
 /* Inlined inside the version-bound integration by scripts/build.cjs. */
   const desktopConfig = /*MYIFY_CONFIG*/null;
-  let bridgePending=false,desktopConnected=false,desktopStatus='Desktop tools are not connected. Launch Spotify using the Myify shortcut.',compatibility=null,commandAcks=[],executedCommands=new Set(),bridgeLast=0;
+  let bridgePending=false,desktopConnected=false,desktopStatus='Desktop tools are not connected. Launch Spotify using the Myify shortcut.',compatibility=null,commandAcks=[],executedCommands=new Set(),bridgeLast=0,mirroredRevision=-1;
   let endOfSong=null,fade=null,editorSession=null;
   const defaults=Core.defaultBindings();
   const shortcutLabels={lyrics:'Open lyrics',bookmark:'Add bookmark',tools:'Playback tools',back:'Seek back 10 seconds',forward:'Seek forward 10 seconds',setA:'Set loop A',setB:'Set loop B',clearLoop:'Clear loop',editor:'Lyrics editor',stamp:'Timestamp next lyric line',mini:'Mini-player',generate:'Generate local lyrics',theme:'Cycle themes'};
@@ -17,6 +17,7 @@
       case'previous':return player.skipToPrevious();
       case'back':return seek(progress()-10000);
       case'forward':return seek(progress()+10000);
+      case'shutdown':return registry.resolve(Symbol.for('LifecycleAPI')).shutdown();
       case'attach':{
         if(!playable(command.uri)||typeof command.raw!=='string'||command.raw.length>512*1024||!Core.parseLrc(command.raw).lines.length)throw Error('Generated lyrics were invalid or too large.');
         const item=current(),old=state.tracks[command.uri]||{};
@@ -33,7 +34,10 @@
     const index=data?Core.activeLine(data.lyrics.map(line=>({ms:line.start})),position):-1;
     try{
       const sentAcks=[...commandAcks];
-      const reply=await desktopRequest('/sync',{uri:item?.uri||'',title:item?.name||'',artist:artist(item),position,duration:player.getState()?.duration||0,paused:!!player.getState()?.isPaused,line:index>=0?data.lyrics[index].text:'',acks:sentAcks});
+      const sentRevision=revision;
+      const reply=await desktopRequest('/sync',{uri:item?.uri||'',title:item?.name||'',artist:artist(item),position,duration:player.getState()?.duration||0,paused:!!player.getState()?.isPaused,line:index>=0?data.lyrics[index].text:'',acks:sentAcks,...(mirroredRevision!==revision?{state}:{})});
+      mirroredRevision=sentRevision;
+      if(reply.restore){const recovered=Core.validateState(reply.restore);if((recovered.modifiedAt||0)>(state.modifiedAt||0)){localStorage.setItem(KEY,JSON.stringify(recovered));state=recovered;notify();appearance();say('Myify settings recovered from the desktop backup.');}}
       commandAcks=commandAcks.filter(id=>!sentAcks.includes(id));desktopConnected=true;desktopStatus=reply.status;compatibility=reply.compatibility;
       for(const command of reply.commands||[]){
         if(!executedCommands.has(command.id)){executedCommands.add(command.id);try{await desktopCommand(command);}catch(e){say(e.message);}}

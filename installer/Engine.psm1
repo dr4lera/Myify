@@ -76,6 +76,7 @@ function Edit-Archive([string]$Path,[switch]$Remove) {
 }
 function Stop-Spotify {
   $main=Get-CimInstance Win32_Process -Filter "Name='Spotify.exe'" -ErrorAction SilentlyContinue|Where-Object{ $_.ExecutablePath -and [IO.Path]::GetFullPath($_.ExecutablePath) -eq $script:Exe -and $_.CommandLine -notmatch '--type=' }
+  if($main){$config=Read-Json (Join-Path $script:DataRoot 'bridge.json');if($config){try{Invoke-RestMethod -Uri ('http://127.0.0.1:'+$config.port+'/prepare') -Method Post -Headers @{Origin='https://xpui.app.spotify.com';Authorization=('Bearer '+$config.token)} -ContentType 'application/json' -Body '{}' -TimeoutSec 2|Out-Null;for($i=0;$i-lt 20;$i++){if(-not($main|Where-Object{Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue})){break};Start-Sleep -Milliseconds 150}}catch{}}}
   foreach($process in $main){
     $p=Get-Process -Id $process.ProcessId -ErrorAction SilentlyContinue
     if($p -and $p.MainWindowHandle -ne 0){$null=$p.CloseMainWindow();Start-Sleep -Milliseconds 800}
@@ -103,15 +104,15 @@ function Install-Enhancer {
   $previous=Read-Json $script:Receipt
   $loader=[IO.File]::ReadAllText((Join-Path $PSScriptRoot 'native-loader.js')).Replace('/*MYIFY_CONFIG*/null',((Get-BridgeConfiguration)|ConvertTo-Json -Compress))
   $loaderHash=BytesHash ([Text.Encoding]::UTF8.GetBytes($loader))
-  if($CloseSpotify){Stop-DesktopTools}
   if($previous -and $previous.loaderSha256-eq $loaderHash -and $previous.patchedSha256-eq(FileHash $script:UI)){
+    if($CloseSpotify){Stop-DesktopTools}
     if($ProtectUpdates){Enable-UpdateProtection -SkipShortcuts:$SkipShortcuts}
     return Get-EnhancerStatus
   }
   $patch=Join-Path $script:DataRoot 'prepared-xpui.spa'
   Copy-Item -LiteralPath $original -Destination $patch -Force;Edit-Archive $patch
   $null=Test-SpotifyContent $patch -AllowEnhancer
-  if($CloseSpotify){Stop-Spotify}else{if(Get-Process Spotify -ErrorAction SilentlyContinue|Where-Object{$_.Path -eq $script:Exe}){throw 'Close Spotify before applying the enhancement.'}}
+  if($CloseSpotify){Stop-Spotify;Stop-DesktopTools}else{if(Get-Process Spotify -ErrorAction SilentlyContinue|Where-Object{$_.Path -eq $script:Exe}){throw 'Close Spotify before applying the enhancement.'}}
   $rollback=Join-Path $script:DataRoot 'previous-xpui.spa';Copy-Item -LiteralPath $script:UI -Destination $rollback -Force
   try{
     Copy-Item -LiteralPath $patch -Destination $script:UI -Force

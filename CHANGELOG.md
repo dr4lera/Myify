@@ -7,6 +7,7 @@
 - Add an LRC/text timing editor, saved per-song loops, fonts/backgrounds, editable shortcuts with conflict checks, and richer backups.
 - Add end-of-song/fade sleep modes, live compatibility information, read-only duplicate/missing-file reports and backed-up MP3/FLAC metadata/artwork editing.
 - Preserve the installer ID, installation folder, Spotify resource backup and existing renderer storage during upgrade.
+- Keep a timestamped desktop recovery copy and request a normal Spotify shutdown for upgrades, protecting recent lyric attachments from delayed browser-storage writes.
 - Keep the integrated desktop source under GPL-2.0-or-later, with existing renderer/installer code MIT and separate upstream notices.
 
 ## 0.3.1 - Installer discovery and diagnostics

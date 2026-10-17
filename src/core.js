@@ -52,6 +52,7 @@
   function validateState(value) {
     if (!value || value.version !== VERSION || !value.tracks || typeof value.tracks !== 'object' || Array.isArray(value.tracks) || !Array.isArray(value.bookmarks)) throw Error('This is not an Enhancer v1 backup.');
     const state = emptyState();
+    if(Number.isFinite(value.modifiedAt)&&value.modifiedAt>=0)state.modifiedAt=value.modifiedAt;
     for (const [uri, track] of Object.entries(value.tracks)) {
       if (!validUri(uri) || !track || typeof track !== 'object') throw Error('Backup has an invalid song.');
       if (typeof track.raw !== 'undefined' && (typeof track.raw !== 'string' || track.raw.length > MAX_FILE)) throw Error('Invalid lyric data.');
