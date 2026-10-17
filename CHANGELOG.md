@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.3.1 — Initial public Myify release
+## 0.3.1 - Installer discovery and diagnostics
+
+- Add a Spotify folder picker, common-path detection and silent `/SPOTIFYDIR` support.
+- Remember the selected folder for manager launches and installer upgrades.
+- Validate numeric executable versions and resource hashes in one engine.
+- Report actual missing-file, unsupported-build and modified-resource errors.
+- Verify fresh-profile install/uninstall and custom folders with spaces.
+
+## 0.3.0 - Initial public Myify release
 
 - Publish the Windows native integration as **Myify — Spotify local themes and lyrics tool**, with MIT source, documentation and downloadable installer.
 - Import synchronized local LRC lyrics into the native renderer; manage lyrics and backup saved state.

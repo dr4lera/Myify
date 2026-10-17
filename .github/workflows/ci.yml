@@ -27,3 +27,13 @@ jobs:
             if($parseErrors){$parseErrors | Format-List; $failed=$true}
           }
           if($failed){throw 'PowerShell parsing failed'}
+      - name: Build Windows installer
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $compiler=Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if(-not(Test-Path -LiteralPath $compiler)){
+            choco install innosetup --yes --no-progress
+            if($LASTEXITCODE -ne 0){throw 'Inno Setup installation failed'}
+          }
+          .\Build-Installer.ps1 -InnoCompiler $compiler
