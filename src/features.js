@@ -96,13 +96,6 @@
   }
   function extraSettings(section,intro,card){
     const lyricButtons=el('div',undefined,'le-row');lyricButtons.append(button('Lyrics editor',openEditor),button('Generate local lyrics',()=>openDesktop('generate')),button('Mini-player',()=>openDesktop('mini')),button('Local library',()=>openDesktop('library')));intro.append(lyricButtons);
-    const appearanceCard=card('Background & fonts'),font=el('select',undefined,'le-input');
-    for(const value of ['System','Segoe UI','Arial','Georgia','Consolas']){const option=el('option',value);option.value=value;font.append(option);}font.value=state.settings.customTheme.fontFamily||'System';
-    function custom(patch){const customTheme=Core.validateTheme({...state.settings.customTheme,...patch});if(save({...state,settings:{...state.settings,theme:'custom',customTheme}}))appearance();}
-    font.onchange=()=>custom({fontFamily:font.value});row(appearanceCard,'App font',font);
-    const image=el('input');image.type='file';image.accept='image/png,image/jpeg,image/webp';image.hidden=true;
-    image.onchange=async()=>{const file=image.files[0];image.value='';if(!file)return;try{if(file.size>1000000||!['image/png','image/jpeg','image/webp'].includes(file.type))throw Error('Choose a PNG, JPEG or WebP image under 1 MB.');const reader=new FileReader();reader.onload=()=>custom({backgroundImage:reader.result});reader.readAsDataURL(file);}catch(e){say(e.message);}};
-    const imageButtons=el('div',undefined,'le-row');imageButtons.append(button('Choose background image',()=>image.click()),button('Remove background',()=>custom({backgroundImage:''})),image);appearanceCard.append(imageButtons);
     const loops=card('Saved A/B loops'),list=el('div');list.dataset.leSavedLoops='';
     loops.append(button('Save current loop',()=>{if(!loop||loop.b===null)return say('Set A and B first.');const name=prompt('Name this loop','Loop '+((state.tracks[currentUri]?.loops?.length||0)+1));if(!name)return;const saved=[...(state.tracks[currentUri]?.loops||[]),{name:name.slice(0,100),a:loop.a,b:loop.b}];if(saved.length>100)return say('Remove a saved loop first (100 per song).');remember({loops:saved});renderSavedLoops();}),list);
     renderSavedLoops();
@@ -139,7 +132,7 @@
   async function exportBackup(){let desktop=null;try{desktop=await desktopRequest('/library');}catch{}download('myify-backup.json',JSON.stringify({...state,...(desktop?{desktopLibrary:desktop}:{})},null,2));say(desktop?'Backup includes settings, lyrics, loops, bookmarks and desktop file mappings.':'Settings backed up. Desktop tools were unavailable; their library mappings were not included.');}
   function extraTick(){
     syncDesktop();sleepTick();
-    const info=document.querySelector('[data-le-compatibility]');if(info){const c=compatibility;info.textContent=`Myify 0.4.0 · Tested Spotify 1.3.5.3058. ${desktopConnected?'Desktop tools connected.':'Desktop tools disconnected.'} ${c?`Installed Spotify: ${c.installedSpotify} · ${c.supported?'Supported':'Compatibility not confirmed'}.`:''}`;}
+    const info=document.querySelector('[data-le-compatibility]');if(info){const c=compatibility;info.textContent=`Myify 0.4.1 · Tested Spotify 1.3.5.3058. ${desktopConnected?'Desktop tools connected.':'Desktop tools disconnected.'} ${c?`Installed Spotify: ${c.installedSpotify} · ${c.supported?'Supported':'Compatibility not confirmed'}.`:''}`;}
     document.querySelectorAll('[data-le-generation]').forEach(node=>{node.textContent=desktopConnected?desktopStatus:'';});
     if(window._myifyLoopUri!==currentUri){window._myifyLoopUri=currentUri;renderSavedLoops();}
   }

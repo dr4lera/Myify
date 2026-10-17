@@ -1,6 +1,6 @@
-MYIFY 0.4.0 - COMBINED WINDOWS TOOLS
+MYIFY 0.4.1 - COMBINED WINDOWS TOOLS
 
-Run Myify-Setup-0.4.0.exe over your existing Myify installation. Spotify closes
+Run Myify-Setup-0.4.1.exe over your existing Myify installation. Spotify closes
 while setup updates the tools. The install identity, original Spotify resource
 backup and saved lyrics/themes/bookmarks are preserved. Launch Spotify (Myify).
 Standalone desktop Spotify 1.3.5.3058 is required; unknown builds are refused.

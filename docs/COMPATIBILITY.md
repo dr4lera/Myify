@@ -2,7 +2,7 @@
 
 ## Supported platform
 
-Release 0.4.0 supports Windows x64-compatible standalone desktop Spotify **1.3.5.3058**, in a writable standalone installation folder (normally `%APPDATA%\Spotify`). It uses Windows PowerShell 5.1 and includes its own desktop runtime and English lyric models. End users do not need Python, FFmpeg, Node, Spicetify or Inno Setup. The Store package, other Spotify builds, macOS and Linux are unsupported. See the [combined tools guide](COMBINED-TOOLS.md) for upgrade and desktop connection details.
+Release 0.4.1 supports Windows x64-compatible standalone desktop Spotify **1.3.5.3058**, in a writable standalone installation folder (normally `%APPDATA%\Spotify`). It uses Windows PowerShell 5.1 and includes its own desktop runtime and English lyric models. End users do not need Python, FFmpeg, Node, Spicetify or Inno Setup. The Store package, other Spotify builds, macOS and Linux are unsupported. See the [combined tools guide](COMBINED-TOOLS.md) for upgrade and desktop connection details.
 
 The compatibility manifest records original resource-entry SHA-256 hashes and the tested executable version. Installation verifies the contents, backs up the original resource archive, adds Myify's loader and a bootstrap script reference, and writes a receipt. Unknown modifications and unsupported builds are refused. Previously installed versions of this same enhancement are recognized. This is not a promise of compatibility across Spotify updates.
 

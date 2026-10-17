@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 - Unified theme editor
+
+- Replace the old color-only layout with one editor for colors, hex values, typography, lyric sizing and background images, alongside a live preview.
+- Refresh every control when switching presets, importing or loading saved themes.
+- Save/export the active appearance, including fonts and embedded backgrounds.
+- Accept theme JSON files up to 2 MB so themes containing background images can be imported again.
+- Retain existing saved themes, lyrics, loops, key bindings and disk recovery state.
+
 ## 0.4.0 - Combined desktop tools and offline lyrics
 
 - Bundle local lyric generation, English base/small models, mini-player and local library in one installer.

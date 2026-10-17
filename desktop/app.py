@@ -18,7 +18,7 @@ from lrc_engine import MODELS, load_model, transcribe, save_unique, Cancelled
 from bridge import Bridge, serve
 import library
 
-VERSION = '0.4.0'
+VERSION = '0.4.1'
 
 
 class App:

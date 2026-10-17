@@ -6,7 +6,7 @@
 
 ## Install
 
-1. Open **[Releases](https://github.com/dr4lera/Myify/releases)** and download **Myify-Setup-0.4.0.exe** from **Assets**. GitHub's source ZIP is source code, not the installer. Run it over an existing Myify installation to upgrade.
+1. Open **[Releases](https://github.com/dr4lera/Myify/releases)** and download **Myify-Setup-0.4.1.exe** from **Assets**. GitHub's source ZIP is source code, not the installer. Run it over an existing Myify installation to upgrade.
 2. You need the standalone Windows desktop Spotify **1.3.5.3058** already installed. Other builds and the Microsoft Store distribution are not supported by this release.
 3. Run the installer and confirm the folder containing your `Spotify.exe` and `Apps\xpui.spa`. Common standalone locations are detected; browse to a custom folder if needed. Spotify closes while the verified patch is installed. Launch **Spotify (Myify)** from the **Myify** Start menu group.
 4. Click the sliders beside Spotify's lyrics control, or open Spotify Settings and find **Myify**.
@@ -14,6 +14,8 @@
 The installer is unsigned. It contains Myify scripts and compatibility hashes, not Spotify, songs, credentials, or decompiled source. Spotify sign-in and normal account requirements still apply. Myify does not unlock Premium or bypass content access.
 
 ## Features
+
+- **Unified theme editor** with live preview, hex colors, fonts, background images and complete theme save/import/export. See the [theme guide](docs/COMBINED-TOOLS.md#themes-and-shortcuts).
 
 - **Generate lyrics** button for the current local song, with bundled offline models and automatic attachment. No separate LRC Maker install.
 - Timestamp editor, per-song named loops, background images/fonts, synchronized always-on-top mini-player, configurable keyboard bindings, local file scanning and MP3/FLAC metadata/artwork editing.

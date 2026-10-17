@@ -170,6 +170,7 @@
   within('[data-le-file]').append(button('Import .lrc', importLyrics), button('Open lyrics', () => { navigate('/lyrics'); close(); }));
   within('[data-le-settings-link]').append(button('Settings & bookmarks', () => { navigate('/preferences'); close(); setTimeout(() => document.getElementById('spotify-native-enhancer-settings')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 800); }));
   function row(container, label, control) { const r = el('div', undefined, 'le-pair'); r.append(el('span', label), control); container.append(r); }
+  /* MYIFY_THEME_EDITOR */
   function settings() {
     if (document.getElementById('spotify-native-enhancer-settings')) return;
     const main = document.querySelector('main'); if (!main) return;
@@ -177,26 +178,7 @@
     const card = title => { const c = el('div', undefined, 'le-card'); c.append(el('h2', title)); section.append(c); return c; };
     const intro = card('Myify'); intro.append(el('p', 'Imported lyrics use Spotify’s original lyric view. Your files, bookmarks and appearance stay on this computer.'));
     const buttons = el('div', undefined, 'le-row le-import-row'); buttons.append(button('Import .lrc for current item', importLyrics, true), button('Open lyrics', () => navigate('/lyrics')), button('Playback tools', open)); intro.append(buttons);
-    const theme = el('select', undefined, 'le-input');theme.id='enhancer-theme-mode'; for (const [value, text] of [['forest','Spotify default'],['midnight','Midnight blue'],['plum','Plum'],['custom','Custom theme']]) { const option = el('option', text); option.value = value; theme.append(option); } theme.value = state.settings.theme;
-    const editor=el('div');editor.id='enhancer-theme-editor';editor.hidden=theme.value!=='custom';
-    theme.onchange = () => { if (save({ ...state, settings: { ...state.settings, theme: theme.value } })) {appearance();editor.hidden=theme.value!=='custom';} }; row(intro, 'App theme', theme);
-    const name=el('input',undefined,'le-input');name.id='enhancer-theme-name';name.maxLength=60;name.value=state.settings.customTheme.name;row(editor,'Theme name',name);
-    name.onchange=()=>save({...state,settings:{...state.settings,customTheme:{...state.settings.customTheme,name:name.value||'My theme'}}});
-    const colorControls={};
-    for(const [key,label]of [['background','Main background'],['panel','Panels & player bar'],['text','Text'],['muted','Secondary text'],['accent','Accent & buttons'],['lyricsBackground','Imported lyric background'],['lyricsText','Imported lyric text']]){
-      const input=el('input',undefined,'le-input');input.type='color';input.id='enhancer-color-'+key;input.value=state.settings.customTheme[key];input.style.cssText='width:80px;height:36px;padding:3px';input.setAttribute('aria-label',label);colorControls[key]=input;
-      input.oninput=()=>{const customTheme={...state.settings.customTheme,[key]:input.value};if(save({...state,settings:{...state.settings,theme:'custom',customTheme}})){theme.value='custom';appearance();}};row(editor,label,input);
-    }
-    const saved=el('select',undefined,'le-input');saved.id='enhancer-saved-themes';
-    function refreshSaved(){saved.replaceChildren();const placeholder=el('option','Choose a saved theme');placeholder.value='';saved.append(placeholder);state.settings.savedThemes.forEach((t,i)=>{const o=el('option',t.name);o.value=String(i);saved.append(o);});}
-    function syncEditor(){theme.value=state.settings.theme;editor.hidden=theme.value!=='custom';name.value=state.settings.customTheme.name;for(const key of Object.keys(colorControls))colorControls[key].value=state.settings.customTheme[key];refreshSaved();}
-    saved.onchange=()=>{if(saved.value==='')return;const customTheme=Core.validateTheme(state.settings.savedThemes[Number(saved.value)]);if(save({...state,settings:{...state.settings,theme:'custom',customTheme}})){appearance();syncEditor();}};
-    const themeFile=el('input');themeFile.type='file';themeFile.accept='.json';themeFile.id='enhancer-theme-file';themeFile.hidden=true;
-    themeFile.onchange=async()=>{const f=themeFile.files[0];themeFile.value='';if(!f)return;try{if(f.size>65536)throw Error('Theme file must be under 64 KB.');const file=JSON.parse(await f.text());if(file.type!=='spotify-native-enhancer-theme'||file.version!==1)throw Error('Choose an Enhancer theme file.');const customTheme=Core.validateTheme(file.theme);const savedThemes=[...state.settings.savedThemes.filter(t=>t.name!==customTheme.name),customTheme].slice(-30);if(save({...state,settings:{...state.settings,theme:'custom',customTheme,savedThemes}})){appearance();syncEditor();say('Custom theme imported.');}}catch(e){say(e.message);}};
-    const themeButtons=el('div',undefined,'le-row');themeButtons.style.margin='14px 0';themeButtons.append(button('Save theme',()=>{const customTheme=Core.validateTheme({...state.settings.customTheme,name:name.value||'My theme'});const savedThemes=[...state.settings.savedThemes.filter(t=>t.name!==customTheme.name),customTheme].slice(-30);if(save({...state,settings:{...state.settings,customTheme,savedThemes}})){refreshSaved();say('Theme saved.');}}),button('Export theme',()=>download('myify-theme.json',JSON.stringify({type:'spotify-native-enhancer-theme',version:1,theme:palette()},null,2))),button('Import theme',()=>themeFile.click()),themeFile);
-    editor.append(themeButtons);intro.append(editor);row(intro,'Saved themes',saved);refreshSaved();
-    const size = el('input', undefined, 'le-input'); size.type = 'range'; size.min = '18'; size.max = '48'; size.value = state.settings.fontSize;
-    size.oninput = () => { if (save({ ...state, settings: { ...state.settings, fontSize: Number(size.value) } })) appearance(); }; row(intro, 'Lyric text size', size);
+    mountThemeEditor(card('Theme editor'));
     const notes = card('Playback bookmarks'), noteList = el('div', undefined, 'le-list'); notes.append(button('Bookmark current position', addBookmark), noteList); noteList.dataset.leBookmarkList = '';
     const lyrics = card('Imported lyric files'), controls = el('div', undefined, 'le-row');
     const filter = el('input', undefined, 'le-input'); filter.placeholder = 'Filter title or artist'; filter.setAttribute('aria-label', 'Filter local lyric files');
@@ -250,6 +232,6 @@
   }
   document.addEventListener('keydown',handleShortcut);
   window.addEventListener('storage',e=>{if(e.key===KEY){try{state=e.newValue?Core.validateState(JSON.parse(e.newValue)):Core.emptyState();notify();appearance();}catch{}}});
-  window.SpotifyNativeEnhancer={version:'0.4.0',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),openEditor,getStatus:()=>({version:'0.4.0',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,desktopConnected,compatibility,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
+  window.SpotifyNativeEnhancer={version:'0.4.1',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),openEditor,getStatus:()=>({version:'0.4.1',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,desktopConnected,compatibility,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
   setInterval(tick,200);
 })();

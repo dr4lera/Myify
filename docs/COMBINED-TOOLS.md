@@ -28,7 +28,9 @@ The sleep controls offer a normal timer, **Stop after song**, and **Fade timer**
 
 ## Themes and shortcuts
 
-Settings includes live color controls, saved themes, theme JSON import/export, app fonts, and a local PNG/JPEG/WebP background under 1 MB. Background images are embedded in theme exports. Choose **Custom theme** when editing colors. **Spotify default** restores default appearance.
+Settings → Myify → **Theme editor** now combines the preset selector, name, color swatches and editable hex values, app font, lyric text size, background images, and a live preview. Edits apply immediately. Choosing a preset, importing, or loading a saved theme refreshes every control together. **Save theme** stores the complete active appearance; **Export theme** includes the font and embedded background. **Spotify default** restores the default appearance.
+
+Backgrounds can be local PNG/JPEG/WebP images under 1 MB. Theme JSON imports accept files up to 2 MB, including themes with embedded images; the previous 64 KB import limit rejected larger image themes. Existing v1 theme files and saved themes remain compatible.
 
 Under **Keyboard shortcuts**, select an action's field and press the desired modifier combination. Backspace clears a binding. Duplicate assignments are rejected; **Reset shortcuts** restores defaults. These are focused-Spotify shortcuts, not system-wide hotkeys. Bindings, loops, fonts and embedded backgrounds are included in backups.
 
