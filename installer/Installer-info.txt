@@ -1,6 +1,11 @@
-This installer adds local lyric import, playback tools and custom color themes
+This installer adds local lyric generation/editing, playback tools and themes
 inside your existing Windows Spotify app. Spotify sign-in and account features
 continue to work normally. It does not bundle Spotify or any music files.
+
+Myify desktop tools and English base.en/small.en models are included. No separate
+LRC Maker install is needed. Launch Spotify (Myify) after installation, then use
+Generate lyrics for a local song. Audio is processed on your own computer.
+This upgrades existing Myify installations while keeping saved user settings.
 
 Spotify will close while the UI patch is applied. An original resource backup
 and an installation receipt are saved under your local application data.

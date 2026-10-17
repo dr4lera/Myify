@@ -130,6 +130,9 @@
     const t=palette();
     themeStyle.textContent=state.settings.theme==='forest'?'':`html{--background-base:${t.background};--background-elevated-base:${t.panel};--background-highlight:${t.panel};--text-base:${t.text};--text-subdued:${t.muted};--essential-bright-accent:${t.accent};--text-bright-accent:${t.accent}}html main,html .main-view-container__scroll-node-child{background-color:${t.background}!important;color:${t.text}}html [data-testid="global-nav-bar"],html [data-testid="now-playing-bar"]{background-color:${t.panel}!important}html main [data-encore-id="text"],html .le-settings,html .le-popover{color:${t.text}}html .le-primary{background:${t.accent};color:#101010}html .le-popover,html .le-input{background-color:${t.panel};color:${t.text}}html .le-subtle,html .le-status,html .le-card p,html .le-popover p{color:${t.muted}}`;
     parsedCache.clear();
+    const font=t.fontFamily&&t.fontFamily!=='System'?JSON.stringify(t.fontFamily):'inherit';
+    themeStyle.textContent+=`html body,html main,html .le-popover,html .le-settings,html .le-editor{font-family:${font}!important}`;
+    if(t.backgroundImage)themeStyle.textContent+=`html main{background-image:linear-gradient(#0007,#0007),url("${t.backgroundImage}")!important;background-size:cover!important;background-attachment:fixed!important}`;
   }
   const fileInput = el('input'); fileInput.id='spotify-native-enhancer-lrc-file'; fileInput.type = 'file'; fileInput.accept = '.lrc'; fileInput.hidden = true;
   fileInput.onchange = async () => {
@@ -163,7 +166,7 @@
     try{if(player.getState()?.isPaused){await player.resume({featureIdentifier:'local_enhancer'});await new Promise(r=>setTimeout(r,200));}if(loop!==selected)return;await seek(selected.a);if(loop!==selected)return;selected.active=true;lastSeek=Date.now();loopStatus();say('Loop active. Clear stops looping.');}catch(e){selected.active=false;loopStatus();say('Loop could not start: '+e.message);}
   }), button('Clear', () => { loop = null; loopStatus();say('Loop cleared.'); }));
   function loopStatus() { within('[data-le-loop-status]').textContent = loop ? `A ${Core.format(loop.a)}${loop.b === null ? ' · set B next' : ' → B ' + Core.format(loop.b)+(loop.active?' · Looping':' · Ready')}` : 'Loop off'; }
-  within('[data-le-timer]').append(button('Start timer', () => { const minutes = Number(within('[data-le-minutes]').value); if (minutes < 1 || minutes > 240 || !Number.isFinite(minutes)) return say('Choose 1–240 minutes.'); sleepAt = Date.now() + minutes * 60000; say('Sleep timer started.'); }), button('Cancel', () => { sleepAt = null; within('[data-le-sleep-status]').textContent = 'Timer off'; }));
+  within('[data-le-timer]').append(button('Start timer', () => { const minutes = Number(within('[data-le-minutes]').value); if (minutes < 1 || minutes > 240 || !Number.isFinite(minutes)) return say('Choose 1–240 minutes.'); cancelSleep();sleepAt = Date.now() + minutes * 60000; say('Sleep timer started.'); }), button('Cancel', cancelSleep));
   within('[data-le-file]').append(button('Import .lrc', importLyrics), button('Open lyrics', () => { navigate('/lyrics'); close(); }));
   within('[data-le-settings-link]').append(button('Settings & bookmarks', () => { navigate('/preferences'); close(); setTimeout(() => document.getElementById('spotify-native-enhancer-settings')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 800); }));
   function row(container, label, control) { const r = el('div', undefined, 'le-pair'); r.append(el('span', label), control); container.append(r); }
@@ -201,12 +204,13 @@
     const lyricList = el('div', undefined, 'le-list'); lyricList.dataset.leLyricList = ''; controls.append(filter, sort); lyrics.append(controls, lyricList);
     filter.oninput = () => renderLists(); sort.onchange = () => renderLists();
     section.dataset.leFilter = ''; section._leFilter = filter; section._leSort = sort;
-    const backup = card('Backup & shortcuts'); backup.append(el('p', 'Alt+Shift+L opens lyrics · Alt+Shift+B bookmarks · Alt+Shift+T opens playback tools · Alt+Shift+Left/Right seeks. Shortcuts work while Spotify is focused. Loops and timers stop when Spotify closes.'));
+    extraSettings(section,intro,card);
+    const backup = card('Backup & restore'); backup.append(el('p', 'Backups include lyric attachments, saved loops, bookmarks, themes and keyboard bindings. Desktop library mappings are included while desktop tools are connected. Music files and model weights are not copied.'));
     const backupRow = el('div', undefined, 'le-row'); const restore = el('input'); restore.type = 'file'; restore.accept = '.json'; restore.hidden = true;
-    restore.onchange = async () => { const f = restore.files[0]; restore.value = ''; if (!f) return; try { if (f.size > 5*1024*1024) throw Error('Backup must be under 5 MB.'); const other = Core.validateState(JSON.parse(await f.text())); const bookmarks = new Map(state.bookmarks.map(b=>[b.id,b])); other.bookmarks.forEach(b=>bookmarks.set(b.id,b)); if (bookmarks.size > 2000) throw Error('Too many bookmarks.'); if (save({ ...state, tracks: { ...state.tracks, ...other.tracks }, bookmarks: [...bookmarks.values()], settings: other.settings })) { appearance(); say('Backup imported.'); } } catch (e) { say(e.message); } };
-    backupRow.append(button('Export backup', () => download('myify-backup.json', JSON.stringify(state,null,2))), button('Import backup', () => restore.click()), restore); backup.append(backupRow);
+    restore.onchange = async () => { const f = restore.files[0]; restore.value = ''; if (!f) return; try { if (f.size > 32*1024*1024) throw Error('Backup must be under 32 MB.'); const raw=JSON.parse(await f.text()),other = Core.validateState(raw); const bookmarks = new Map(state.bookmarks.map(b=>[b.id,b])); other.bookmarks.forEach(b=>bookmarks.set(b.id,b)); if (bookmarks.size > 2000) throw Error('Too many bookmarks.'); if (save({ ...state, tracks: { ...state.tracks, ...other.tracks }, bookmarks: [...bookmarks.values()], settings: other.settings })) { appearance();if(raw.desktopLibrary){try{await desktopRequest('/restore',raw.desktopLibrary);}catch{say('Settings restored. Launch desktop tools and import again to restore local file mappings.');return;}}say('Backup imported.');section.remove();settings(); } } catch (e) { say(e.message); } };
+    backupRow.append(button('Export backup', exportBackup), button('Import backup', () => restore.click()), restore); backup.append(backupRow);
     const statusEl = el('p', status, 'le-status'); statusEl.dataset.leStatus = ''; statusEl.setAttribute('role','status'); section.append(statusEl);
-    const content = main.querySelector('.contentSpacing') || main; content.append(section); renderLists();
+    const content = main.querySelector('.contentSpacing') || main; content.append(section); renderLists();renderSavedLoops();
   }
   async function playBookmark(b) { try { if (currentUri !== b.uri) { await player.play({ uri: local(b.uri)?'spotify:local-files':b.uri }, { featureIdentifier: 'local_enhancer' }, local(b.uri)?{skipTo:{uri:b.uri}}:{}); const end = Date.now()+8000; while(current()?.uri !== b.uri && Date.now()<end) await new Promise(r=>setTimeout(r,100)); if (current()?.uri !== b.uri) throw Error('Song did not load.'); } await seek(b.ms); } catch(e) { say(e.message); } }
   function renderLists() {
@@ -226,6 +230,7 @@
     const label=el('label', 'Delay (ms) '),input=el('input',undefined,'le-input'); input.type='number';input.step='100';input.min='-600000';input.max='600000';input.value=state.tracks[currentUri]?.offset||0;
     input.onchange=()=>{const offset=Number(input.value);if(!Number.isFinite(offset)||Math.abs(offset)>600000)return say('Delay must be within ±600000 ms.');if(remember({offset}))say('Lyric delay saved.');};label.append(input);toolbar.append(label,button('Playback tools',open),el('span',record(currentUri)?.file||'Attach your own synchronized lyrics'));container.prepend(toolbar);
   }
+  /* MYIFY_FEATURES */
   function tick() {
     try {
       if(!player&&!bind())return;
@@ -240,11 +245,11 @@
       if(route==='/preferences')settings();else document.getElementById('spotify-native-enhancer-settings')?.remove();
       const renderKey=route+'|'+currentUri+'|'+revision;if(renderKey!==lastRender){renderLists();lastRender=renderKey;}
       if(loop?.active&&loop.uri===currentUri&&loop.b!==null&&!player.getState()?.isPaused&&!seekPending&&progress()>=loop.b&&Date.now()-lastSeek>500){lastSeek=Date.now();const selected=loop;seek(loop.a).catch(e=>{if(loop===selected){selected.active=false;loopStatus();}say('Loop stopped: '+e.message);});}
-      if(sleepAt!==null){const remaining=sleepAt-Date.now();within('[data-le-sleep-status]').textContent=Core.format(remaining)+' remaining';if(remaining<=0){sleepAt=null;if(loop)loop.active=false;loopStatus();player.pause().then(()=>say('Sleep timer finished.')).catch(e=>say(e.message));within('[data-le-sleep-status]').textContent='Finished · playback paused';}}
+      extraTick();
     }catch(e){console.warn('Enhancer update:',e.message);}
   }
-  document.addEventListener('keydown',event=>{if(event.target?.matches('input,textarea,select,[contenteditable=true]'))return;if(event.key==='Escape'&&!popover.hidden){close();return;}if(!event.altKey||!event.shiftKey||event.ctrlKey||event.metaKey)return;switch(event.key.toLowerCase()){case'l':navigate('/lyrics');break;case'b':addBookmark();break;case't':popover.hidden?open():close();break;case'arrowleft':seek(progress()-10000).catch(e=>say(e.message));break;case'arrowright':seek(progress()+10000).catch(e=>say(e.message));break;default:return;}event.preventDefault();});
+  document.addEventListener('keydown',handleShortcut);
   window.addEventListener('storage',e=>{if(e.key===KEY){try{state=e.newValue?Core.validateState(JSON.parse(e.newValue)):Core.emptyState();notify();appearance();}catch{}}});
-  window.SpotifyNativeEnhancer={version:'0.3.1',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),getStatus:()=>({version:'0.3.1',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
+  window.SpotifyNativeEnhancer={version:'0.4.0',playerBound:false,openTools:open,openSettings:()=>navigate('/preferences'),openEditor,getStatus:()=>({version:'0.4.0',uri:currentUri,localLyrics:!!record(currentUri),hookedModules:[91243,48071],playerBound:!!player,desktopConnected,compatibility,loop:loop?{a:loop.a,b:loop.b,active:loop.active}:null}),refresh:notify};
   setInterval(tick,200);
 })();

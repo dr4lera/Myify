@@ -2,6 +2,28 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { parseLrc, activeLine, emptyState, validateState, validUri, format } = require('../src/core.js');
 const {validateTheme}=require('../src/core.js');
+const {defaultBindings,validateBindings,binding,serializeLrc}=require('../src/core.js');
+test('Sleep fade reaches silence only at deadline; end-of-song stops on boundary or URI change',()=>{
+  const {sleepStatus}=require('../src/core.js');const timer={deadline:60000,endingUri:null,fadeMs:30000},playback={uri:'song',position:0,duration:120000,now:30000};assert.equal(sleepStatus(timer,playback).factor,1);assert.equal(sleepStatus(timer,{...playback,now:45000}).factor,.5);assert.equal(sleepStatus(timer,{...playback,now:60000}).stop,true);assert.equal(sleepStatus(timer,{...playback,now:60000}).factor,0);
+  const end={deadline:null,endingUri:'song',fadeMs:0};assert.equal(sleepStatus(end,playback).stop,false);assert.equal(sleepStatus(end,{...playback,position:119700}).stop,true);assert.equal(sleepStatus(end,{...playback,uri:'next'}).stop,true);
+});
+
+test('Old backups migrate with default bindings while keeping lyrics and bookmarks',()=>{
+  const old={version:1,tracks:{'spotify:local:A:B:C:120':{title:'Song',raw:'[00:01.00]Hi',offset:-100}},bookmarks:[{id:'old',uri:'spotify:track:a',ms:1000,note:'Saved'}],settings:{theme:'plum',fontSize:32}};
+  const migrated=validateState(old);assert.deepEqual(migrated.settings.bindings,defaultBindings());assert.equal(migrated.tracks['spotify:local:A:B:C:120'].raw,old.tracks['spotify:local:A:B:C:120'].raw);assert.equal(migrated.bookmarks[0].note,'Saved');
+});
+test('Bindings can change and clear, but conflicts and invalid combinations are rejected',()=>{
+  const b=validateBindings({...defaultBindings(),lyrics:'Ctrl+Shift+K',stamp:''});assert.equal(b.lyrics,'Ctrl+Shift+K');assert.equal(b.stamp,'');
+  assert.throws(()=>validateBindings({...defaultBindings(),lyrics:defaultBindings().bookmark}),/share/);
+  assert.throws(()=>validateBindings({lyrics:'K'}));assert.equal(binding({key:'k',ctrlKey:true,shiftKey:true}),'Ctrl+Shift+K');
+});
+test('Saved loops, mappings, background and custom bindings survive a complete backup',()=>{
+  const s=emptyState();s.tracks['spotify:track:x']={title:'Song',artist:'A',raw:'',file:'',offset:0,path:'C:\\Music\\Song.flac',loops:[{name:'Verse',a:1000,b:5000}]};s.settings.bindings.lyrics='Ctrl+Shift+K';s.settings.customTheme.backgroundImage='data:image/png;base64,YQ==';s.settings.customTheme.fontFamily='Georgia';assert.deepEqual(validateState(s),s);
+  assert.throws(()=>validateState({...s,tracks:{'spotify:track:x':{loops:[{a:500,b:600}]}}}));
+});
+test('Edited lyrics round trip timestamps, metadata and offset without accepting missing times',()=>{
+  const text=serializeLrc([{ms:1234,text:'One'},{ms:61000,text:'Two'}],{ti:'Title',ar:'Artist'},-120);const parsed=parseLrc(text);assert.equal(parsed.offset,-120);assert.equal(parsed.meta.ti,'Title');assert.deepEqual(parsed.lines,[{ms:1230,text:'One'},{ms:61000,text:'Two'}]);assert.throws(()=>serializeLrc([{ms:null,text:'Untimed'}]));
+});
 test('LRC metadata, repeated stamps, hundredths and thousandths', () => {
   const parsed = parseLrc('\uFEFF[ar:Example Artist]\n[offset:-250]\n[01:03.45][02:04.123]Hello\n[00:01.5]First\r\n[ti:Example]');
   assert.deepEqual(parsed.lines, [{ms:1500,text:'First'}, {ms:63450,text:'Hello'}, {ms:124123,text:'Hello'}]);

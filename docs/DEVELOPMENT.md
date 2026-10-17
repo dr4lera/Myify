@@ -2,6 +2,8 @@
 
 ## Build requirements
 
+For 0.4's combined installer, first follow [the desktop build steps](COMBINED-TOOLS.md#source-builds-and-licensing). Python dependencies and both model folders are required in addition to the tools below. `Build-Desktop.ps1` produces the desktop payload before `Build-Installer.ps1` packages it. `src/features.js` is inlined into the adapter by the build script.
+
 Node.js 22 or later builds and tests the dependency-free JavaScript. Building the installer additionally requires Windows, Windows PowerShell 5.1 and Inno Setup 6 (`ISCC.exe`). Spotify is not needed to build the distributed loader or installer. Compatibility data is a checked-in hash manifest, not a bundled app.
 
 ```powershell

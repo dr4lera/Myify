@@ -1,59 +1,46 @@
-MYIFY 0.3.1 - WINDOWS
+MYIFY 0.4.0 - COMBINED WINDOWS TOOLS
 
-Run Myify-Setup-0.3.1.exe. It updates the enhancement in your existing
-Spotify app, creates a manager and protected launcher in the Start menu, and
-backs up the original Spotify resources. Select the folder containing Spotify.exe and Apps\xpui.spa.
-Common standalone locations are detected. Spotify closes during installation.
-The installer currently supports desktop Spotify 1.3.5.3058 only.
+Run Myify-Setup-0.4.0.exe over your existing Myify installation. Spotify closes
+while setup updates the tools. The install identity, original Spotify resource
+backup and saved lyrics/themes/bookmarks are preserved. Launch Spotify (Myify).
+Standalone desktop Spotify 1.3.5.3058 is required; unknown builds are refused.
 
-PLAYBACK TOOLS
-In Spotify, click the sliders beside the lyrics control. Playback tools now use
-confirmed seek positions and route local files through Spotify's local collection
-when required. Mark Set A, move forward at least half a second, then Set B.
-Set B starts the loop immediately, even from pause. Clear stops looping.
-Bookmarks, seek shortcuts and sleep timers support songs, local files and
-podcasts; chapter URIs are also accepted when Spotify permits playback/seeking.
-Spotify's own playback restrictions are shown as errors instead of silent failures.
+The sliders button beside lyrics opens Myify playback tools:
+- Generate lyrics transcribes the current LOCAL song with the included English
+  model, remembering the audio-file location and automatically attaching results.
+  Select the file once if Myify has not located it. Audio stays on this PC.
+- Lyrics editor imports LRC/text, timestamps lines as you listen, shifts timing,
+  and saves corrections or exports LRC files. Recognition needs review.
+- Set A and B to loop. Settings lets you save multiple named loops per song.
+- Mini-player opens synchronized lyrics and controls in an always-on-top window.
+- Sleep modes include a timer, end of current song, and a final 30-second fade.
 
-LYRICS
-Play an item, choose Import .lrc, and select your UTF-8 timed lyrics file.
-Your lyrics use Spotify's native renderer. Delay (ms) adjusts synchronization.
-Imports now accept local files, streamed songs and episodes. The imported text
-is your file; Spotify's catalog lyric service and account access are unchanged.
+Spotify Settings > Myify includes live colors, saved themes, background images,
+fonts, editable keyboard bindings with conflict checks, settings backup/restore,
+version compatibility, saved loops and bookmarks. Shortcuts work with Spotify
+focused. Backspace clears a binding; Reset shortcuts restores defaults.
 
-THEMES
-Open Settings & bookmarks, then App theme > Custom theme. Edit main background,
-panels/player bar, text, secondary text, accent, and imported lyric colors.
-Name and save a theme, or import/export theme JSON files. Spotify default resets
-appearance. Presets include Midnight blue and Plum. Theme files accept only
-validated hex colors, not scripts or arbitrary CSS.
+Start menu > Myify > Myify desktop tools provides advanced generation options,
+batch files, base.en/small.en models, editable results and local library tools.
+Both English models are included. A separate LRC Maker install is unnecessary.
+Optional other-language models require a download. Spotify streams are not
+extracted. Spotify login and account requirements continue to apply.
 
-UPDATE HANDLING
-The installer defaults to keeping the tested Spotify build. This is reversible:
-Start menu > Myify > Myify settings and updates > Allow
-Spotify updates. Pause Spotify updates re-enables protection.
-Protection blocks Spotify's known local/roaming Update staging directories with
-read-only files and applies update-suppression flags to managed launches and
-recognized Spotify shortcuts/startup. Original staging data and shortcuts are
-backed up and restored when protection is removed. No firewall/hosts edits,
-system-wide update settings, services or background scheduled jobs are added.
+Local library: folder scans, missing-file detection and exact duplicate reports.
+No duplicate files are deleted. MP3/FLAC metadata and artwork editing saves an
+original-file backup before editing. Spotify may need a local-file rescan.
 
-Use the protected Spotify (Myify) shortcut for compatibility checking and
-repair. If the same supported build loses the patch, that launcher can repair it.
-A future Spotify build is not automatically considered compatible. The launcher
-will not inject old hooks into unknown app code. A manual reinstall or changed
-updater may bypass the version protection; an updated enhancer may then be needed.
+Data: %LOCALAPPDATA%\SpotifyNativeEnhancerData
+Generated lyrics: lyrics subfolder. Original music backups: metadata-backups.
+Theme/lyric/bookmark settings remain in Spotify's existing browser storage.
+Export backups before clearing browser data. Backups include desktop mappings
+when desktop tools are connected; they do not include music or model weights.
+Uninstall restores supported Spotify resources and keeps saved user data.
 
-BACKUPS / UNINSTALL
-Manager files: %LOCALAPPDATA%\SpotifyNativeEnhancer
-Original UI, receipts and protection backups: %LOCALAPPDATA%\SpotifyNativeEnhancerData
-Uninstall through Windows Installed apps to restore the original supported UI and
-allow updates. If Spotify has independently updated, its new UI is left intact.
-Lyrics, bookmarks and themes are not deleted by uninstall; they remain in
-Spotify's local browser storage. Export a backup before reinstalling Spotify or
-clearing its browser data.
+Update protection is reversible in Myify settings and updates. Future Spotify
+versions require tested compatibility. No firewall or hosts-file changes.
 
-ABOUT
-Myify is an independent, open-source local customization tool. It contains no
-Spotify app code, music, credentials or recovered source. It does not change
-account entitlements. Source and full documentation: https://github.com/dr4lera/Myify
+Renderer/installer source: MIT. Integrated desktop: GPL-2.0-or-later, with
+separate upstream library/model licenses included. No Spotify code or music is
+included. Full documentation and source: https://github.com/dr4lera/Myify
+Guide: https://github.com/dr4lera/Myify/blob/main/docs/COMBINED-TOOLS.md

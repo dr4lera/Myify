@@ -1,0 +1,17 @@
+Myify desktop tools are GPL-2.0-or-later. Renderer integration and installer scripts retain their MIT license. Complete application source and build instructions: https://github.com/dr4lera/Myify
+
+Includes Mutagen 1.47.0 (GPL-2.0-or-later, source https://github.com/quodlibet/mutagen/tree/release-1.47.0), Python/Tcl/Tk, Faster Whisper, CTranslate2, PyAV and FFmpeg, NumPy, Tokenizers, Hugging Face Hub, ONNX Runtime and dependencies. Original license texts are in third-party-licenses and _internal package metadata. Pinned dependencies are in desktop/requirements.txt and lrc-maker/requirements.txt.
+
+English base.en and small.en Whisper models are bundled. Model source, exact revisions and checksums: lrc-maker/model-manifest.json. Whisper weights are MIT licensed; see third-party-licenses/whisper-MODEL-LICENSE.txt.
+
+Upstream source:
+https://github.com/SYSTRAN/faster-whisper
+https://github.com/OpenNMT/CTranslate2
+https://github.com/PyAV-Org/PyAV
+https://github.com/PyAV-Org/pyav-ffmpeg
+https://github.com/numpy/numpy
+https://github.com/huggingface/tokenizers
+https://github.com/huggingface/huggingface_hub
+https://github.com/microsoft/onnxruntime
+https://www.python.org/downloads/source/
+https://github.com/openai/whisper

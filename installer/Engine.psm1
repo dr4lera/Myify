@@ -71,7 +71,7 @@ function Edit-Archive([string]$Path,[switch]$Remove) {
     $old=$zip.GetEntry('local-enhancer.js');if($old){$old.Delete()}
     if(-not $Remove){$anchor='<script defer="defer" src="/xpui-snapshot.js"></script>';if(($html.Split(@($anchor),[StringSplitOptions]::None).Count-1)-ne 1){throw 'Spotify startup entry changed.'};$html=$html.Replace($anchor,$script:Bootstrap+$anchor)}
     $entry=$zip.CreateEntry('index.html',[IO.Compression.CompressionLevel]::Optimal);$writer=[IO.StreamWriter]::new($entry.Open(),[Text.UTF8Encoding]::new($false));try{$writer.Write($html)}finally{$writer.Dispose()}
-    if(-not $Remove){$entry=$zip.CreateEntry('local-enhancer.js',[IO.Compression.CompressionLevel]::Optimal);$writer=[IO.StreamWriter]::new($entry.Open(),[Text.UTF8Encoding]::new($false));try{$writer.Write([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'native-loader.js')))}finally{$writer.Dispose()}}
+    if(-not $Remove){$entry=$zip.CreateEntry('local-enhancer.js',[IO.Compression.CompressionLevel]::Optimal);$writer=[IO.StreamWriter]::new($entry.Open(),[Text.UTF8Encoding]::new($false));try{$config=Get-BridgeConfiguration;$loader=[IO.File]::ReadAllText((Join-Path $PSScriptRoot 'native-loader.js'));$writer.Write($loader.Replace('/*MYIFY_CONFIG*/null',($config|ConvertTo-Json -Compress)))}finally{$writer.Dispose()}}
   }finally{$zip.Dispose()}
 }
 function Stop-Spotify {
@@ -90,6 +90,7 @@ function Stop-Spotify {
 function Install-Enhancer {
   param([switch]$CloseSpotify,[switch]$ProtectUpdates,[switch]$SkipShortcuts)
   $version=Assert-Supported
+  $null=Get-BridgeConfiguration
   $null=Test-SpotifyContent $script:UI -AllowEnhancer
   [IO.Directory]::CreateDirectory($script:DataRoot)|Out-Null
   $original=Join-Path $script:DataRoot ('backup-'+$version+'.spa')
@@ -100,7 +101,9 @@ function Install-Enhancer {
     Move-Item -LiteralPath ($original+'.new') -Destination $original
   }else{$null=Test-SpotifyContent $original}
   $previous=Read-Json $script:Receipt
-  $loaderHash=FileHash (Join-Path $PSScriptRoot 'native-loader.js')
+  $loader=[IO.File]::ReadAllText((Join-Path $PSScriptRoot 'native-loader.js')).Replace('/*MYIFY_CONFIG*/null',((Get-BridgeConfiguration)|ConvertTo-Json -Compress))
+  $loaderHash=BytesHash ([Text.Encoding]::UTF8.GetBytes($loader))
+  if($CloseSpotify){Stop-DesktopTools}
   if($previous -and $previous.loaderSha256-eq $loaderHash -and $previous.patchedSha256-eq(FileHash $script:UI)){
     if($ProtectUpdates){Enable-UpdateProtection -SkipShortcuts:$SkipShortcuts}
     return Get-EnhancerStatus
@@ -113,7 +116,7 @@ function Install-Enhancer {
   try{
     Copy-Item -LiteralPath $patch -Destination $script:UI -Force
     if((FileHash $script:UI)-ne(FileHash $patch)){throw 'Installed archive failed verification.'}
-    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.3.1';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
+    Write-Json $script:Receipt ([ordered]@{enhancerVersion='0.4.0';spotifyVersion=$version;spotifyRoot=$script:SpotifyRoot;originalBackup=$original;originalSha256=(FileHash $original);patchedSha256=(FileHash $patch);loaderSha256=$loaderHash;installedAt=(Get-Date).ToString('o')})
     if($ProtectUpdates){Enable-UpdateProtection -SkipShortcuts:$SkipShortcuts}
   }catch{Copy-Item -LiteralPath $rollback -Destination $script:UI -Force;if($previous){Write-Json $script:Receipt $previous}elseif(Test-Path -LiteralPath $script:Receipt){Remove-Item -LiteralPath $script:Receipt};throw}
   return Get-EnhancerStatus
@@ -194,6 +197,7 @@ function Get-EnhancerStatus {
 function Start-ProtectedSpotify {
   param([int]$DebugPort=0)
   $status=Get-EnhancerStatus
+  if(-not $status.supported){throw "Detected Spotify $($status.spotifyVersion). Myify requires $($script:Builds.spotifyVersion)."}
   if($status.supported-and-not $status.patched){$null=Install-Enhancer -CloseSpotify}
   if($status.updatesPinned){
     $protection=Read-Json $script:Protection
@@ -201,10 +205,13 @@ function Start-ProtectedSpotify {
   }
   $arguments=@();if($status.updatesPinned){$arguments+=@('--update-endpoint-override=http://127.0.0.1:9/','--disable-update-restarts')}
   if($DebugPort-gt 0){$arguments+=@('--remote-debugging-port='+$DebugPort,'--remote-debugging-address=127.0.0.1')}
+  $desktop=Join-Path $PSScriptRoot 'desktop\MyifyDesktop.exe'
+  if(Test-Path -LiteralPath $desktop){Start-Process -FilePath $desktop -ArgumentList @('--hidden','--data-root',('"'+$script:DataRoot+'"')) -WindowStyle Hidden}
   if($arguments.Count){Start-Process -FilePath $script:Exe -ArgumentList $arguments -WindowStyle Hidden}else{Start-Process -FilePath $script:Exe -WindowStyle Hidden}
 }
 function Remove-Enhancer {
   param([switch]$CloseSpotify)
+  Stop-DesktopTools
   Disable-UpdateProtection
   $receipt=Read-Json $script:Receipt
   if($receipt-and(Test-Path -LiteralPath $script:UI)-and(FileHash $script:UI)-eq $receipt.patchedSha256){
@@ -213,4 +220,20 @@ function Remove-Enhancer {
     Copy-Item -LiteralPath $receipt.originalBackup -Destination $script:UI -Force
   }
 }
-Export-ModuleMember -Function Assert-Supported,Initialize-Enhancer,Install-Enhancer,Get-EnhancerStatus,Enable-UpdateProtection,Disable-UpdateProtection,Start-ProtectedSpotify,Remove-Enhancer,Stop-Spotify,Test-SpotifyContent
+function Get-BridgeConfiguration {
+  $path=Join-Path $script:DataRoot 'bridge.json'
+  $config=Read-Json $path
+  if($config -and $config.token -match '^[a-f0-9]{64}$' -and $config.port -ge 1024 -and $config.port -le 65535){return $config}
+  $bytes=New-Object byte[] 32;$rng=[Security.Cryptography.RandomNumberGenerator]::Create();try{$rng.GetBytes($bytes)}finally{$rng.Dispose()}
+  $listener=[Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,0);$listener.Start();try{$port=$listener.LocalEndpoint.Port}finally{$listener.Stop()}
+  $config=[ordered]@{token=([BitConverter]::ToString($bytes)).Replace('-','').ToLowerInvariant();port=$port}
+  Write-Json $path $config
+  return $config
+}
+function Stop-DesktopTools {
+  $config=Read-Json (Join-Path $script:DataRoot 'bridge.json')
+  if(-not $config){return}
+  try{$reply=Invoke-RestMethod -Uri ('http://127.0.0.1:'+$config.port+'/open') -Method Post -Headers @{Origin='https://xpui.app.spotify.com';Authorization=('Bearer '+$config.token)} -ContentType 'application/json' -Body '{"action":"quit"}' -TimeoutSec 2}catch{return}
+  if($reply.pid){for($i=0;$i-lt 50;$i++){if(-not(Get-Process -Id ([int]$reply.pid) -ErrorAction SilentlyContinue)){return};Start-Sleep -Milliseconds 200};throw 'Myify desktop tools are still closing. Wait for the current task to stop and run setup again.'}else{Start-Sleep -Milliseconds 800}
+}
+Export-ModuleMember -Function Assert-Supported,Initialize-Enhancer,Install-Enhancer,Get-EnhancerStatus,Enable-UpdateProtection,Disable-UpdateProtection,Start-ProtectedSpotify,Remove-Enhancer,Stop-Spotify,Test-SpotifyContent,Get-BridgeConfiguration

@@ -1,0 +1,2 @@
+-r ../lrc-maker/requirements.txt
+mutagen==1.47.0

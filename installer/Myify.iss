@@ -1,4 +1,4 @@
-#define AppVersion "0.3.1"
+#define AppVersion "0.4.0"
 [Setup]
 AppId={{1C840779-AD93-40D8-9679-EA7560E26881}
 AppName=Myify
@@ -16,7 +16,7 @@ DisableDirPage=yes
 DisableProgramGroupPage=yes
 OutputDir=..\dist
 OutputBaseFilename=Myify-Setup-{#AppVersion}
-Compression=lzma2
+Compression=lzma2/fast
 SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayName=Myify
@@ -37,8 +37,10 @@ Source: "payload\supported-build.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\README.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "payload\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "payload\desktop\*"; DestDir: "{app}\desktop"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
+Name: "{group}\Myify desktop tools"; Filename: "{app}\desktop\MyifyDesktop.exe"; WorkingDir: "{app}\desktop"
 Name: "{group}\Spotify (Myify)"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Launch"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"
 Name: "{group}\Myify settings and updates"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Manager"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"
 Name: "{autodesktop}\Spotify (Myify)"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\Manager.ps1"" -Action Launch"; IconFilename: "{code:GetSpotifyExe}"; WorkingDir: "{app}"; Tasks: desktopicon
